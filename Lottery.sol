@@ -6,10 +6,17 @@ contract Lottery {
         string name;
         address userAddress;
     }
+    struct WinnerList {
+        string winnerName;
+        address winnerAddress;
+    }
     address manager;
     uint256 count;
+    bool winnerOneCall = true;
+    bool winnerTwoCall = true;
 
     mapping(uint256 => LotteryBuyers) private lotteryBuyersData;
+    mapping(uint256 => WinnerList) private winner;
 
     constructor() {
         manager = msg.sender;
@@ -21,8 +28,13 @@ contract Lottery {
     }
 
     function entry(string memory name) public payable {
-        require(manager != msg.sender, "Lottery:Manager not allowed");
         require(msg.value == 1 ether, "Lottery:Sorry! please pay 1 ethere");
+        require(
+            abi.encodePacked(name).length != 0,
+            "Lottery:please fill your name"
+        );
+        require(manager != msg.sender, "Lottery:Manager not allowed");
+
         require(existCustomer() == false, "Lottery:sorry! only once");
         lotteryBuyersData[count++] = LotteryBuyers(name, msg.sender);
     }
@@ -35,6 +47,8 @@ contract Lottery {
         }
         return false;
     }
+
+    receive() external payable onlyManager {}
 
     function totalLotteryBuyers() public view returns (uint256) {
         return count;
@@ -50,12 +64,62 @@ contract Lottery {
         return randNo;
     }
 
-    function winner() public view onlyManager returns (LotteryBuyers memory) {
-        uint256 rNum = randomNumber();
-        return lotteryBuyersData[rNum];
+    function winnerOne() public payable onlyManager {
+        require(
+            winnerOneCall == true,
+            "Lottery:Multiple times call not allowed"
+        );
+        winnerOneCall = false;
+        require(count >= 4, "Lottery:Lottery registration not done yet");
+        winner[1] = WinnerList(
+            lotteryBuyersData[randomNumber()].name,
+            lotteryBuyersData[randomNumber()].userAddress
+        );
+        payable(lotteryBuyersData[randomNumber()].userAddress).transfer(
+            2 ether
+        );
     }
 
-    function fundTransfer() public onlyManager {
-        payable(winner().userAddress).transfer(2 ether);
+    function winnerTwo() public payable onlyManager {
+        require(
+            winnerTwoCall == true,
+            "Lottery:Multiple times call not allowed"
+        );
+        winnerTwoCall = false;
+        require(count >= 4, "Lottery:Lottery registration not complete");
+        require(
+            winner[1].winnerAddress !=
+                lotteryBuyersData[randomNumber()].userAddress
+        );
+        winner[2] = WinnerList(
+            lotteryBuyersData[randomNumber()].name,
+            lotteryBuyersData[randomNumber()].userAddress
+        );
+        payable(lotteryBuyersData[randomNumber()].userAddress).transfer(
+            2 ether
+        );
+    }
+
+    function displayWinner(uint8 winnerNumber)
+        public
+        view
+        returns (WinnerList memory)
+    {
+        if (winnerNumber == 1) {
+            if (winnerOneCall == true) {
+                revert("Lottery:winner not declared");
+            } else {
+                return winner[winnerNumber];
+            }
+        }
+        if (winnerNumber == 2) {
+            if (winnerTwoCall == true) {
+                revert("Lottery:winner not declared");
+            } else {
+                return winner[winnerNumber];
+            }
+        } else {
+            revert("Lottery:invalid input");
+        }
     }
 }
