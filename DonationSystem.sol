@@ -28,6 +28,10 @@ contract DonationSystem {
 
     function Donate(string memory name) public payable {
         require(msg.value > 0, "DonationSystem:please send more than 0 ether");
+          require(
+            abi.encodePacked(name).length != 0,
+            "DonationSystem:please fill your name"
+        );
 
         donorDetails[msg.sender].push(DonorData(name, msg.value));
     }
@@ -64,8 +68,12 @@ contract DonationSystem {
         );
 
         require(
-            payable(receiverAddress).balance <= 10 ether,
-            "DonationSystem:Receiver not eligible to receive fund"
+            receiverAddress != owner,
+           "DonationSystem: owner not eligible not eligible to receive"
+        );
+        require(
+            numberOfEther != 0 && address(this).balance >= numberOfEther,
+            "DonationSystem:invalid input"
         );
         payable(receiverAddress).transfer(numberOfEther * 1 ether);
         receiverDetails[count++] = ReceiverData(receiverName, numberOfEther);
