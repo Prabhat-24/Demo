@@ -52,11 +52,11 @@ contract Token20 is IERC20 {
         string memory tSymbol,
         uint256 tDecimals
     ) {
+        allTokenAddress = msg.sender;
         totalTokenSupply = mint(numberOftoken);
         name = tName;
         symbol = tSymbol;
         decimals = tDecimals;
-        allTokenAddress = msg.sender;
         tokenBalance[allTokenAddress] = totalTokenSupply;
     }
 
