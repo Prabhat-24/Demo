@@ -32,7 +32,7 @@ interface IERC20 {
 
     function contractBalance() external view returns (uint256);
 
-    function transferEther() external payable returns (bool);
+    function transferEther() external  returns (bool);
 
     function changePrice(uint256 price) external;
 
@@ -208,7 +208,7 @@ contract Erc20Update is IERC20 {
         return address(this).balance;
     }
 
-    function transferEther() external payable returns (bool) {
+    function transferEther() external returns (bool) {
         payable(owner).transfer(address(this).balance);
         return true;
     }
