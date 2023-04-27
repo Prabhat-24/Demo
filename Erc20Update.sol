@@ -32,9 +32,9 @@ interface IERC20 {
 
     function contractBalance() external view returns (uint256);
 
-    function transferEther() external  returns (bool);
+    function transferEther() external returns (bool);
 
-    function changePrice(uint256 price) external;
+    function changePrice(uint256 price) external returns (uint256);
 
     event transactionDetails(
         address sender,
@@ -70,7 +70,7 @@ contract Erc20Update is IERC20 {
         owner = msg.sender;
         maximumSupply = tMaximumSupply;
         totalTokenSupply = mint(numberOftoken);
-        tokenPrice = tTokenPrice;
+        tokenPrice = changePrice(tTokenPrice);
         name = tName;
         symbol = tSymbol;
         decimals = tDecimals;
@@ -191,7 +191,7 @@ contract Erc20Update is IERC20 {
         require(numberOfToken != 0, "Erc20Update: please give valid number");
         require(msg.value != 0, "Erc20Update: please give valid ether");
         require(
-            msg.value == (tokenPrice * numberOfToken)/10**decimals,
+            msg.value == (tokenPrice * numberOfToken) / 10**decimals,
             "Erc20Update: please give valid input"
         );
 
@@ -213,8 +213,9 @@ contract Erc20Update is IERC20 {
         return true;
     }
 
-    function changePrice(uint256 price) external onlyOwner {
+    function changePrice(uint256 price) public onlyOwner returns (uint256) {
         require(price != 0, "Erc20Update: please enter more than one");
         tokenPrice = price;
+        return tokenPrice;
     }
 }
