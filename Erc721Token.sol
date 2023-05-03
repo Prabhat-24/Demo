@@ -1,8 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
+import "NFT/IERC721Receiver.sol";
+import "NFT/String.sol";
 
 interface IERC721 {
-    function mintToken(address _to, uint256 _tokenId) external;
+    function mintToken(
+        address _to,
+        uint256 _tokenId,
+        string memory _tokenUri
+    ) external;
 
     function balanceOf(address _owner) external view returns (uint256);
 
@@ -38,46 +44,40 @@ interface IERC721 {
         view
         returns (bool);
 
-    // function setUri(uint256 _tokenId, string memory _baseUri)
-    //     external
-    //     returns (string memory);
-
     event Transfer(address _from, address _to, uint256 _tokenId);
     event Approval(address _owner, address _approved, uint256 _tokenId);
     event ApprovalForAll(address _owner, address _operator, bool _approved);
 }
 
-interface IERC721Receiver {
-    function onERC721Received(
-        address operator,
-        address from,
-        uint256 tokenId,
-        bytes calldata data
-    ) external returns (bytes4);
-}
-
-contract Erc721Token is IERC721 {
+contract Erc721Token is IERC721, IERC721Receiver {
     string public name;
     string public symbol;
     address public admin;
+    string public baseTokenURI;
 
     mapping(address => uint256) private balance;
     mapping(uint256 => address) private owner;
     mapping(uint256 => address) private allow;
     mapping(uint256 => bool) private exists;
     mapping(address => mapping(address => bool)) private allowAll;
+    mapping(uint256 => string) public tokenUri;
 
-    // mapping(uint256 => string) private tokenUri;
-
-    constructor(string memory _tokenName, string memory _symbol) {
+    constructor(
+        string memory _tokenName,
+        string memory _symbol,
+        string memory _baseURI
+    ) {
         require(
-            bytes(_tokenName).length != 0 || bytes(_symbol).length != 0,
-            "Erc721Token:fill the input fields"
+            bytes(_tokenName).length != 0 &&
+                bytes(_symbol).length != 0 &&
+                bytes(_baseURI).length != 0,
+            "Erc721Token:fill all input fields"
         );
 
         name = _tokenName;
         symbol = _symbol;
         admin = msg.sender;
+        baseTokenURI = _baseURI;
     }
 
     modifier onlyAdmin() {
@@ -85,7 +85,11 @@ contract Erc721Token is IERC721 {
         _;
     }
 
-    function mintToken(address _to, uint256 _tokenId) public onlyAdmin {
+    function mintToken(
+        address _to,
+        uint256 _tokenId,
+        string memory _tokenUri
+    ) public onlyAdmin {
         require(
             _to != address(0),
             "Erc721Token: zero address not allowed in from"
@@ -100,8 +104,34 @@ contract Erc721Token is IERC721 {
         owner[_tokenId] = _to;
         balance[_to] += 1;
         exists[_tokenId] = true;
+        tokenUri[_tokenId] = _tokenUri;
+
         emit Transfer(address(0), _to, _tokenId);
     }
+
+    // function mintToken(address _to, uint256 _tokenId) public onlyAdmin {
+    //     require(
+    //         _to != address(0),
+    //         "Erc721Token: zero address not allowed in from"
+    //     );
+    //     require(
+    //         _to.code.length == 0,
+    //         "Erc721Token:don't mint in contract address "
+    //     );
+
+    //     require(!exists[_tokenId], "Erc721Token: not available");
+
+    //     owner[_tokenId] = _to;
+    //     balance[_to] += 1;
+    //     exists[_tokenId] = true;
+    //     tokenUri[_tokenId] = string.concat(
+    //         baseTokenURI,
+    //         Strings.toString(_tokenId),
+    //         ".json"
+    //     );
+
+    //     emit Transfer(address(0), _to, _tokenId);
+    // }
 
     function balanceOf(address _owner) external view returns (uint256) {
         return balance[_owner];
@@ -159,7 +189,7 @@ contract Erc721Token is IERC721 {
         require(
             msg.sender == _from ||
                 msg.sender == allow[_tokenId] ||
-                allowAll[_from][msg.sender] ,
+                allowAll[_from][msg.sender],
             "Erc721Token: you are not allowed"
         );
 
@@ -207,13 +237,30 @@ contract Erc721Token is IERC721 {
 
     function burn(uint256 _tokenId) public {
         require(_tokenId != 0, "Erc721Token: enter a valid tokenId");
-        require(exists[_tokenId] , "Erc721Token:token not available");
+        require(exists[_tokenId], "Erc721Token:token not available");
         require(
             owner[_tokenId] == msg.sender,
             "Erc721Token: you are not tokenOwner"
         );
         owner[_tokenId] = address(0);
         balance[msg.sender] -= 1;
+        transferFrom(msg.sender, address(0), _tokenId);
         emit Transfer(msg.sender, address(0), _tokenId);
+    }
+
+    function onERC721Received(
+        address operator,
+        address from,
+        uint256 tokenId,
+        bytes calldata data
+    ) public pure returns (bytes4) {
+        return
+            bytes4(
+                keccak256("onERC721Received(operator, from, tokenId, data)")
+            );
+    }
+
+    function tokenURI(uint256 _tokenId) external view returns (string memory) {
+        return tokenUri[_tokenId];
     }
 }
