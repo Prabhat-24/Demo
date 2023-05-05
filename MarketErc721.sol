@@ -64,8 +64,7 @@ contract MarketErc721 {
         address nftOwner = erc721.ownerOf(_tokenId);
         require(_tokenId != 0, "MarketErc721:enter more than zero");
         if (erc721.ownerOf(_tokenId) != tokenOnSale[_tokenId].owner) {
-            tokenOnSale[_tokenId].status = false;
-            revert("scam scam scam !!!!");
+            revert("MarketErc721: externally transferred ");
         }
         require(tokenOnSale[_tokenId].status, "MarketErc721:token not on sale");
         require(msg.sender != nftOwner, "MarketErc721:Nft owner not allowed");
