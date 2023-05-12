@@ -87,6 +87,12 @@ contract ERC721Auction {
 
         _bidWinner[nftId].highestBid = msg.value;
         _bidWinner[nftId].highestBidder = msg.sender;
+        
+        emit HighestBidder(
+            _bidWinner[nftId].highestBidder,
+            nftId,
+            _bidWinner[nftId].highestBid
+        );
     }
 
     function nftTransfer(uint256 nftId) external {
@@ -108,11 +114,7 @@ contract ERC721Auction {
         payable(_nftOnAuction[nftId].seller).transfer(
             _bidWinner[nftId].highestBid
         );
-        emit HighestBidder(
-            _bidWinner[nftId].highestBidder,
-            nftId,
-            _bidWinner[nftId].highestBid
-        );
+
         delete _nftOnAuction[nftId];
     }
 
