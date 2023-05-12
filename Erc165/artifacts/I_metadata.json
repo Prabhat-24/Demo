@@ -1,0 +1,59 @@
+{
+	"compiler": {
+		"version": "0.8.18+commit.87f61d96"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [],
+				"name": "getValue",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"Erc165/IStore.sol": "I"
+		},
+		"evmVersion": "paris",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"Erc165/IStore.sol": {
+			"keccak256": "0x223cb84a62ca3e683011d2208f84ebf5e8e31a354ec1aa5dc6b6db5156c6009e",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://97f0bdd621e0548b952e516d19e237173cf86b6f65082a67bf0340d7ba43b85a",
+				"dweb:/ipfs/Qme1DvHjJhp2eSoo8BheQnqCJCBp2URdkXGZmamZBX4Ku5"
+			]
+		}
+	},
+	"version": 1
+}

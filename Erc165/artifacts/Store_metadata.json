@@ -1,0 +1,107 @@
+{
+	"compiler": {
+		"version": "0.8.18+commit.87f61d96"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [],
+				"name": "getValue",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "number",
+						"type": "uint256"
+					}
+				],
+				"name": "setValue",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "bytes4",
+						"name": "interfaceId",
+						"type": "bytes4"
+					}
+				],
+				"name": "supportsInterface",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "pure",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"Erc165/Store.sol": "Store"
+		},
+		"evmVersion": "paris",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"Erc165/IERC165.sol": {
+			"keccak256": "0xf8212281a18d5bacffb3f7184ab5044bf272093764fee1e3aabc0508dd54d700",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://d6910865991810d8478f43032f7362610a1a74550ccfb68a1037210eaec0ba5e",
+				"dweb:/ipfs/QmfEPkWbCKUKX5oGWaJvB93sMGtE4maESbRfUFTrE5FttJ"
+			]
+		},
+		"Erc165/IStore.sol": {
+			"keccak256": "0x6851e12744dbf912bf4cf24f8e5fa11f10acc67bdb965e210e5a9e32abf06c7e",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://94542974304cb5b9ea07be13a4caae192f0f24952d92f76ec8bca7319190bc68",
+				"dweb:/ipfs/QmXqYAEjZn8bxFrV5cYKtQyx2q5fPQEFxJ9ma9s1VRLWyb"
+			]
+		},
+		"Erc165/Store.sol": {
+			"keccak256": "0xd61d0e01a9b61e2a0d88df4224f8d04fe191529d3293c476492dff999b6d1043",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://92c59e1ff53c60fa6bad14dba332f5c92b9db8f5e4fa80f54128a5391dea107c",
+				"dweb:/ipfs/QmdeSwCjxAgqZj7hM5tPSCyX81fUUPzWP4GhToVkkcme3y"
+			]
+		}
+	},
+	"version": 1
+}

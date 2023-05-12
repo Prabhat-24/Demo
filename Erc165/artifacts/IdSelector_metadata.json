@@ -1,0 +1,59 @@
+{
+	"compiler": {
+		"version": "0.8.18+commit.87f61d96"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [],
+				"name": "idSelector",
+				"outputs": [
+					{
+						"internalType": "bytes4",
+						"name": "",
+						"type": "bytes4"
+					}
+				],
+				"stateMutability": "pure",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"Erc165/Xor.sol": "IdSelector"
+		},
+		"evmVersion": "paris",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"Erc165/Xor.sol": {
+			"keccak256": "0x84d40c549e0070e8ee70a3546b090076679925f3ff5f72c92cf4aae2fe6f2338",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://777c73a527bde717255e4c7a36176ff28bd1cbc0f514466a575bc6447118c196",
+				"dweb:/ipfs/QmfB2TJBXibbamW9ywGMhxL61wafx179CbxcwCuyEiGi6K"
+			]
+		}
+	},
+	"version": 1
+}
