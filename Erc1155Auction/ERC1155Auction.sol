@@ -21,6 +21,20 @@ contract Auction1155 {
     mapping(uint256 => mapping(address => Auction)) private _nftOnAuction;
     mapping(uint256 => mapping(address => Bidder)) private _bidderDetails;
 
+    event OnAuction(
+        address seller,
+        uint256 nftId,
+        uint128 price,
+        uint256 amount
+    );
+    event HighestBidder(
+        address highestBidder,
+        uint256 nftId,
+        uint256 price,
+        uint256 amount
+    );
+    event CancelAction(address seller, uint256 nftId, uint256 amount);
+
     constructor(address _erc1155) {
         erc1155 = _erc1155;
     }
@@ -58,6 +72,7 @@ contract Auction1155 {
             startTime,
             endTime
         );
+        emit OnAuction(msg.sender, nftId, price, amount);
     }
 
     function auction(uint256 nftId, address seller)
@@ -78,8 +93,7 @@ contract Auction1155 {
             "ERC1155: nft not on auction"
         );
         require(
-            _nftOnAuction[nftId][seller].startTime != 0 &&
-                _nftOnAuction[nftId][seller].startTime <= block.timestamp,
+            _nftOnAuction[nftId][seller].startTime <= block.timestamp,
             "ERC1155: auction not started"
         );
 
@@ -102,6 +116,12 @@ contract Auction1155 {
 
         _bidderDetails[nftId][seller].highestBid = msg.value;
         _bidderDetails[nftId][seller].highestBidder = msg.sender;
+        emit HighestBidder(
+            _bidderDetails[nftId][seller].highestBidder,
+            nftId,
+            _nftOnAuction[nftId][seller].price,
+            _nftOnAuction[nftId][seller].amount
+        );
     }
 
     function nftClaim(uint256 nftId, address seller) external {
@@ -130,6 +150,12 @@ contract Auction1155 {
         payable(_nftOnAuction[nftId][seller].seller).transfer(
             _bidderDetails[nftId][seller].highestBid
         );
+        emit HighestBidder(
+            _bidderDetails[nftId][seller].highestBidder,
+            nftId,
+            _nftOnAuction[nftId][seller].price,
+            _nftOnAuction[nftId][seller].amount
+        );
         delete _nftOnAuction[nftId][seller];
     }
 
@@ -140,7 +166,7 @@ contract Auction1155 {
         );
         require(
             msg.sender == _nftOnAuction[nftId][seller].seller,
-            "ERC721Auction: not owner of nft"
+            "ERC721Auction: not seller of nft"
         );
         require(
             _nftOnAuction[nftId][seller].endTime >= block.timestamp,
@@ -150,6 +176,12 @@ contract Auction1155 {
         payable(_bidderDetails[nftId][seller].highestBidder).transfer(
             _bidderDetails[nftId][seller].highestBid
         );
+        emit CancelAction(
+            msg.sender,
+            nftId,
+            _nftOnAuction[nftId][seller].amount
+        );
+
         delete _nftOnAuction[nftId][seller];
     }
 }
