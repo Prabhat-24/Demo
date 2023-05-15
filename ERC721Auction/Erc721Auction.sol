@@ -71,15 +71,18 @@ contract ERC721Auction {
 
     function bid(uint256 nftId) external payable {
         require(
-            _nftOnAuction[nftId].startTime != 0 &&
-                _nftOnAuction[nftId].startTime <= block.timestamp,
-            "ERC721Auction: auction not started"
+            _nftOnAuction[nftId].seller != msg.sender,
+            "ERC721Auction: seller not allowed"
         );
+
         require(
             _nftOnAuction[nftId].nftId == nftId,
             "ERC721Auction: nft not on auction"
         );
-
+        require(
+            _nftOnAuction[nftId].startTime <= block.timestamp,
+            "ERC721Auction: auction not started"
+        );
         require(
             _nftOnAuction[nftId].endTime >= block.timestamp,
             "ERC721Auction: auction is ended"
@@ -102,11 +105,6 @@ contract ERC721Auction {
     }
 
     function nftClaim(uint256 nftId) external {
-        require(
-            _nftOnAuction[nftId].startTime != 0 &&
-                _nftOnAuction[nftId].startTime <= block.timestamp,
-            "ERC721Auction: auction not started"
-        );
         require(
             _nftOnAuction[nftId].nftId == nftId,
             "ERC721Auction: nft not on auction"
@@ -139,11 +137,6 @@ contract ERC721Auction {
     }
 
     function cancelAuction(uint256 nftId) external {
-        require(
-            _nftOnAuction[nftId].startTime != 0 &&
-                _nftOnAuction[nftId].startTime <= block.timestamp,
-            "ERC721Auction: auction not started"
-        );
         require(
             _nftOnAuction[nftId].nftId == nftId,
             "ERC721Auction: nft not on auction"
