@@ -14,11 +14,11 @@ contract MarketErc721 {
     }
 
     Erc721 erc721;
-    Token20 erc20;
+    ERC20 erc20;
 
     mapping(uint256 => Sale) private tokenOnSale;
 
-    constructor(Erc721 _erc721, Token20 _erc20) {
+    constructor(Erc721 _erc721, ERC20 _erc20) {
         erc721 = _erc721;
         erc20 = _erc20;
     }
