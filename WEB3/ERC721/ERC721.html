@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.0/dist/web3.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="./ERC721.js"></script>
+    <link rel="stylesheet" href="ERC721.css" />
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+    <title>ERC721</title>
+  </head>
+  <body>
+    <h1>ERC721</h1>
+
+    <p id="account">Account</p>
+    <p id="totalSupply">Total TokenId</p>
+    <p id="balanceOf">Total Balance</p>
+
+    <div class="connect">
+      <button id="connectBtn">Connect</button>
+      <button id="disConnectBtn" style="display: none">Disconnect</button>
+    </div>
+
+    <div class="input-container">
+      <button id="mintBtn" onclick="mint()">Mint</button>
+    </div>
+    <div class="input-container">
+      <input id="ownerOf" type="number" placeholder="Enter tokenId" />
+      <button id="ownerOfBtn" onclick="ownerOf()">OwnerOfToken</button>
+    </div>
+
+    <div class="input-container">
+      <input id="burn" type="number" placeholder="Enter tokenId" />
+      <button id="burnBtn" onclick="burn()">Burn</button>
+    </div>
+    <div class="input-container">
+      <input id="approveAddr" type="text" placeholder="Enter to address" />
+      <input id="approveTokenId" type="number" placeholder="Enter tokenId" />
+      <button id="approveBtn" type="button" onclick="approve()">Approve</button>
+    </div>
+    <div>
+      <input
+        id="operatorAddr"
+        type="text"
+        placeholder="Enter operator address"
+      />
+      <label>
+        Approve
+        <input type="radio" name="IsApprovedForAll" value="true" />
+      </label>
+      <label>
+        Revoke
+        <input type="radio" name="IsApprovedForAll" value="false" />
+      </label>
+      <button
+        id="setApprovalForAllBtn"
+        type="button"
+        onclick="setApprovalForAll()"
+      >
+        SetApprovalForAll
+      </button>
+    </div>
+    <div class="input-container">
+      <input id="addressFrom" type="text" placeholder="Enter from address" />
+      <input id="addressTo" type="text" placeholder="Enter to address" />
+      <input id="tokenId" type="number" placeholder="Enter tokenId" />
+      <button id="transferFromBtn" type="button" onclick="transferFrom()">
+        TransferFrom
+      </button>
+    </div>
+
+    <div class="input-container">
+      <input
+        id="safeTransferFrom"
+        type="text"
+        placeholder="Enter from address"
+      />
+      <input id="safeTransferTo" type="text" placeholder="Enter to address" />
+      <input
+        id="safeTransferTokenId"
+        type="number"
+        placeholder="Enter tokenId"
+      />
+      <button
+        id="safeTransferFromBtn"
+        type="button"
+        onclick="safeTransferFrom()"
+      >
+        SafeTransferFrom
+      </button>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   
+    <title>ERC20</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.0/dist/web3.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+   <script src="./ERC20Script.js"></script>
+   <link rel="stylesheet" href="./ERC20.css">
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  </head>
+  <body>
+    <h1>ERC20</h1>
+    <div class="container">
+      <p id="account">Account</p>
+      <p id="tname">TokenName</p>
+      <p id="tsymbol">TokenSymbol</p>
+      <p id="balance">Balance</p>
+
+      <div class="connect">
+        <button id="connectBtn">Connect</button>
+        <button id="disConnectBtn" style="display: none">Disconnect</button>
+      </div>
+
+      <div class="input-container">
+        <input id="mint" type="number" placeholder="Enter amount" />
+        <p id="errormint" style="display: none"></p>
+        <button id="mintBtn" onclick="mint()">Mint</button>
+      </div>
+
+      <div class="input-container">
+        <input id="burn" type="number" placeholder="Enter amount" />
+        <p id="errorburn" style="display: none"></p>
+        <button id="burnBtn" onclick="burn()">Burn</button>
+      </div>
+
+      <div class="input-container">
+        <input
+          id="transferTO"
+          type="text"
+          placeholder="Enter recipient address"
+        />
+        <p id="errorTO" style="display: none"></p>
+        <input id="transferAmount" type="number" placeholder="Enter amount" />
+        <p id="errorAmount" style="display: none"></p>
+        <button id="transferBtn" onclick="transfer()">Transfer</button>
+      </div>
+
+      <div class="input-container">
+        <input
+          id="approveAddress"
+          type="text"
+          placeholder="Enter spender address"
+        />
+        <p id="errorapproveAddr" style="display: none"></p>
+        <input
+          id="approveAmount"
+          type="number"
+          placeholder="Enter spender amount"
+        />
+        <p id="errorapproveAmt" style="display: none"></p>
+        <button id="approveBtn" type="button" onclick="approve()">
+          Approve
+        </button>
+      </div>
+
+      <div class="input-container">
+        <input id="addressFrom" type="text" placeholder="Enter from address" />
+
+        <input id="addressTo" type="text" placeholder="Enter to address" />
+
+        <input
+          id="transferFromAmount"
+          type="number"
+          placeholder="Enter amount"
+        />
+
+        <button id="transferFromBtn" type="button" onclick="transferFrom()">
+          TransferFrom
+        </button>
+        <p id="transferFrom" style="display: none"></p>
+      </div>
+    </div>
+  </body>
+</html>

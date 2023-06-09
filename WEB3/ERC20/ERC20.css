@@ -1,0 +1,98 @@
+body {
+  background-color: #f0f0f0;
+  font-family: Arial, sans-serif;
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+}
+
+p {
+  color: #555;
+}
+
+input[type="text"],
+input[type="number"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  box-sizing: border-box;
+}
+
+button {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #333;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #555;
+}
+
+.input-container p {
+  margin-top: 5px;
+  color: #ff0000;
+}
+
+#transferFrom {
+  margin-top: 10px;
+  color: #006400;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.animation {
+  animation-name: fadeIn;
+  animation-duration: 1s;
+}
+
+/* Additional styling for specific elements */
+#connectBtn,
+#disConnectBtn {
+  background-color: #4caf50;
+}
+
+#disConnectBtn {
+  display: none;
+}
+
+#mintBtn,
+#burnBtn,
+#transferBtn,
+#approveBtn,
+#transferFromBtn {
+  background-color: #2196f3;
+}
+
+#mintBtn:hover,
+#burnBtn:hover,
+#transferBtn:hover,
+#approveBtn:hover,
+#transferFromBtn:hover {
+  background-color: #0d8ddb;
+}
