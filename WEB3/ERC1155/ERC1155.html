@@ -4,16 +4,149 @@
     <script src="https://cdn.jsdelivr.net/npm/web3@1.5.0/dist/web3.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="./ERC1155.js"></script>
-    <!-- <link rel="stylesheet" href=ERC1155.css"> -->
+    <link rel="stylesheet" href="./ERC1155.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.js"></script>
     <title>ERC1155</title>
   </head>
   <body>
+    <h1>ERC1155</h1>
     <p id="account">Account</p>
-
+    <p id="network">ChainId</p>
     <div class="connect">
-      <button id="connectBtn">Connect</button>
-      <button id="disConnectBtn" style="display: none">Disconnect</button>
+      <button id="connectBtn" onclick="connectMetamask()">Connect</button>
+      <button
+        id="disConnectBtn"
+        style="display: none"
+        onclick="disConnectMetamask()"
+      >
+        Disconnect
+      </button>
+    </div>
+
+    <div class="input-container">
+      <label>Mint Token</label> <br />
+      <input id="mintId" type="number" placeholder="Enter tokenId" />
+      <input id="mintAmount" type="number" placeholder="Enter amount" />
+      <button id="mintBtn" onclick="mint()">Mint</button>
+    </div>
+
+    <div class="input-container">
+      <label> Mint Batch</label> <br />
+      <input type="text" id="mintIds" placeholder="Enter tokenId with commas" />
+      <input
+        type="text"
+        id="mintAmounts"
+        placeholder="Enter amount with commas"
+      />
+      <button id="mintBatchBtn" onclick="mintBatch()">Mint Batch</button>
+    </div>
+
+    <div class="input-container">
+      <label>Burn Token</label> <br />
+      <input id="burnId" type="number" placeholder="Enter tokenId" />
+      <input id="burnAmount" type="number" placeholder="Enter amount" />
+      <button id="BurnBtn" onclick=" burn()">Burn</button>
+    </div>
+    <div class="input-container">
+      <label> Burn Batch</label> <br />
+      <input type="text" id="burnIds" placeholder="Enter tokenId with commas" />
+      <input
+        type="text"
+        id="burnAmounts"
+        placeholder="Enter amount with commas"
+      />
+      <button id="burnBatchBtn" onclick="burnBatch()">Burn Batch</button>
+    </div>
+    <div class="input-container">
+      <label>Balance</label> <br />
+      <input id="tokenId" type="number" placeholder="Enter tokenId" />
+      <input id="address" type="text" placeholder="Enter owner address" />
+      <button id="BalanceBtn" onclick="balanceOf()">Check Balance</button>
+    </div>
+
+    <div class="input-container">
+      <label>IsApprovedForAll</label><br />
+      <input id="addrOwner" type="text" placeholder="Enter owner address" />
+      <input
+        id="addrOperator"
+        type="text"
+        placeholder="Enter operator address"
+      />
+      <button id="BalanceBtn" onclick="isApprovedForAll()">
+        Check Approval
+      </button>
+    </div>
+
+    <div class="input-container">
+      <label>SetApprovalForAll</label><br />
+      <input
+        id="operatorAddr"
+        type="text"
+        placeholder="Enter operator address"
+      />
+      <label>
+        Approve
+        <input type="radio" name="IsApprovedForAll" value="true" />
+      </label>
+      <label>
+        Revoke
+        <input type="radio" name="IsApprovedForAll" value="false" />
+      </label>
+      <button id="setApprovalBtn" type="button" onclick="setApprovalForAll()">
+        Set Approval
+      </button>
+    </div>
+    <div class="input-container">
+      <label>SafeTransferFrom</label><br />
+      <input
+        id="safeTransferFrom"
+        type="text"
+        placeholder="Enter from address"
+      />
+      <input id="safeTransferTo" type="text" placeholder="Enter to address" />
+      <input
+        id="safeTransferTokenId"
+        type="number"
+        placeholder="Enter tokenId"
+      />
+      <input id="safeTransferAmount" type="number" placeholder="Enter amount" />
+      <button
+        id="safeTransferFromBtn"
+        type="button"
+        onclick="safeTransferFrom()"
+      >
+        Transfer
+      </button>
+    </div>
+    <div class="input-container">
+      <label>SafeBatchTransferFrom</label><br />
+      <input
+        id="BatchTransferFrom"
+        type="text"
+        placeholder="Enter from address"
+      />
+      <input id="BatchTransferTo" type="text" placeholder="Enter to address" />
+      <input
+        type="text"
+        id="BatchTransferIds"
+        placeholder="Enter ids with commas"
+      />
+      <input
+        type="text"
+        id="BatchTransferAmounts"
+        placeholder="Enter amounts with commas"
+      />
+      <button
+        id="safeBatchTransferFromBtn"
+        type="button"
+        onclick="safeBatchTransferFrom()"
+      >
+        Transfer
+      </button>
     </div>
   </body>
 </html>
-

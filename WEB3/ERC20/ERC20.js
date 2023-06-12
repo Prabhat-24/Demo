@@ -1,4 +1,7 @@
 let web3;
+let oContract;
+let accounts;
+let account = "";
 const contractABI = [
   {
     inputs: [
@@ -314,15 +317,13 @@ const contractABI = [
   },
 ];
 const contractAddress = "0xC4CD7FA609b29F03Dc43C18404671868f612719B";
-let oContract;
 
-let account = "";
 async function connectMetamask() {
   if (window.ethereum) {
     try {
       web3 = new Web3(window.ethereum);
       oContract = new web3.eth.Contract(contractABI, contractAddress);
-      const accounts = await window.ethereum.request({
+      accounts = await window.ethereum.request({
         method: "eth_requestAccounts",
       });
       if (accounts.length > 0) {
@@ -338,7 +339,9 @@ async function connectMetamask() {
         if (accounts.length === 0) {
           location.reload();
         } else {
-          $("#account").text("Address: " + accounts[0]);
+          account = accounts[0];
+          $("#account").text("Address: " + account);
+          alldetails(account);
         }
       });
     } catch (error) {

@@ -391,7 +391,7 @@ async function connectMetamask() {
       const accounts = await window.ethereum.request({
         method: "eth_requestAccounts",
       });
-      if (accounts.length > 0) {
+      if (accounts.length) {
         alert("Wallet connected successfully");
         $("#account").text("Address:" + accounts[0]);
         aAccount = accounts[0];
@@ -401,12 +401,18 @@ async function connectMetamask() {
       }
 
       web3.eth.currentProvider.on("accountsChanged", function (accounts) {
-        if (accounts.length === 0) {
+        if (!accounts.length) {
           location.reload();
         } else {
-          $("#account").text("Address: " + accounts[0]);
+          aAccount = accounts[0];
+          $("#account").text("Address: " + aAccount);
+          alldetails(aAccount);
         }
       });
+      window.ethereum.on('networkChanged', function(networkId){
+        console.log('networkChanged',networkId);
+      });
+      
     } catch (error) {
       console.error("Error connecting to MetaMask:", error);
     }
@@ -457,7 +463,7 @@ async function burn() {
   try {
     if (!aAccount) await connectMetamask();
     let tokenId = $("#burn").val();
-    if (tokenId === "" || isNaN(tokenId) || tokenId <= 0) {
+    if (!tokenId || isNaN(tokenId)) {
       swal({
         text: "A valid tokenId is required",
       });
@@ -497,8 +503,11 @@ async function transferFrom() {
       });
       return;
     }
-
-    if (tokenId === "" || isNaN(tokenId) || tokenId <= 0) {
+    if (addressFrom === addressTo) {
+      swal(swal("Oops", "from address and to address are equal", "error"));
+      return;
+    }
+     if (!tokenId || isNaN(tokenId)) { 
       swal({
         text: "A valid tokenId is required",
       });
@@ -532,7 +541,7 @@ async function ownerOf() {
   try {
     if (!aAccount) await connectMetamask();
     const tokenId = $("#ownerOf").val();
-    if (tokenId === "" || isNaN(tokenId) || tokenId <= 0) {
+    if (!tokenId || isNaN(tokenId)) {
       swal({
         text: "A valid tokenId is required",
       });
@@ -611,7 +620,7 @@ async function approve() {
       return;
     }
 
-    if (tokenId === "" || isNaN(tokenId) || tokenId <= 0) {
+    if (!tokenId || isNaN(tokenId)) {
       swal({
         text: "A valid tokenId is required",
       });
@@ -651,8 +660,11 @@ async function safeTransferFrom() {
       });
       return;
     }
-
-    if (tokenId === "" || isNaN(tokenId) || tokenId <= 0) {
+    if (addressFrom === addressTo) {
+      swal(swal("Oops", "from address and to address are equal", "error"));
+      return;
+    }
+    if (!tokenId || isNaN(tokenId)) {
       swal({
         text: "A valid tokenId is required",
       });
