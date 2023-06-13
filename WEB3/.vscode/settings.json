@@ -1,0 +1,14 @@
+{
+    "editor.mouseWheelScrollSensitivity": 5,
+    "editor.scrollBeyondLastColumn": 1,
+    "editor.scrollBeyondLastLine": false,
+    "editor.scrollPredominantAxis": false,
+    "workbench.list.scrollByPage": true,
+    "terminal.integrated.smoothScrolling": true,
+    "editor.fastScrollSensitivity": 1,
+    "editor.stickyScroll.maxLineCount": 1,
+    "workbench.list.fastScrollSensitivity": 0,
+    "workbench.list.smoothScrolling": true,
+    "terminal.integrated.fastScrollSensitivity": 0,
+    "terminal.integrated.scrollback": 1
+}

@@ -22,7 +22,6 @@ contract ERC721Auction {
 
     event OnAuction(uint256 nftId, uint128 price);
     event HighestBidder(address highestBidder, uint256 nftId, uint256 price);
-    event CancelAction(address seller, uint256 nftId);
 
     constructor(Erc721 _erc721) {
         erc721 = _erc721;
@@ -154,8 +153,6 @@ contract ERC721Auction {
         payable(_bidderDetails[nftId].highestBidder).transfer(
             _bidderDetails[nftId].highestBid
         );
-        emit CancelAction(msg.sender, nftId);
-
         delete _nftOnAuction[nftId];
     }
 }

@@ -438,11 +438,13 @@ async function connectMetamask() {
           location.reload();
         } else {
           aAccount = accounts[0];
-          $("#account").text("Address: " + accounts[0]);
+          toastr.success("account changed successfully");
+          $("#account").text("Address: " + aAccount);
         }
       });
       web3.eth.currentProvider.on("chainChanged", async function (chainId) {
         chainId = await web3.eth.getChainId();
+        $("#network").text("ChainId: " + chainId);
         if (chainId !== sepoliaChainId) {
           let newChainId = "0x" + sepoliaChainId.toString(16);
           await window.ethereum.request({
