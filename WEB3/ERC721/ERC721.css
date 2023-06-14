@@ -1,78 +1,65 @@
-/* Body Styling */
+/* Global styles */
 body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f9f9f9;
-    margin: 0;
-    padding: 20px;
-  }
-  
-  /* Heading Styling */
-  h1 {
-    color: #333;
-    text-align: center;
-  }
-  
-  /* Container Styling */
-  .input-container {
-    margin-bottom: 20px;
-  }
-  
-  /* Button Styling */
-  button {
-    background-color: #007bff;
-    border: none;
-    color: #fff;
-    padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    border-radius: 4px;
-  }
-  
-  button:hover {
-    background-color: #0056b3;
-  }
-  
-  /* Input Styling */
-  input[type="text"],
-  input[type="number"] {
-    padding: 10px;
-    width: 30%;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  
-  /* Paragraph Styling */
-  p {
-    color: #555;
-  }
-  
-  /* Box Styling */
-  .box {
-    background-color: #fff;
-    border: 1px solid #ddd;
-    padding: 20px;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
-  }
-  
-  .box:hover {
-    transform: scale(1.02);
-  }
-  
-  /* Form Styling */
-  .form {
-    max-width: 400px;
-    margin: 0 auto;
-  }
-  
-  .form label {
-    display: block;
-    margin-bottom: 5px;
-  }
-  
-  
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background-color: rgb(18, 42, 119);
+}
+
+h1 {
+  color: #ffffff;
+}
+
+p {
+  color: hsl(0, 0%, 99%);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.content {
+  margin-top: 20px;
+}
+
+.input-container {
+  margin-bottom: 20px;
+}
+
+.input-container label {
+  display: block;
+  margin-bottom: 5px;
+  color: #ffffff;
+  font-size: 20px;
+}
+
+.input-container input[type="text"],
+.input-container input[type="number"] {
+  width: 25%;
+  padding: 10px;
+  margin: 10px;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+}
+
+.input-container button {
+  display: inline-block;
+  background-color: #002fff;
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.input-container button:hover {
+  background-color: #23abfa;
+  color: #ffffff;
+}
+#token-container{
+/* height: 20px; */
+}

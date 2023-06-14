@@ -1,7 +1,11 @@
 let web3;
 let aAccount = "";
 let oContract;
-let sContractAddress = "0xbA2b8AFfa9fCEef1A1e844faeF13962a17E777F9";
+let accounts;
+let chainId;
+let totalMintedTokenId;
+const sepoliaChainId = 11155111;
+let sContractAddress = "0xe97af1B47820a8b9BdB776338Bb013371d8f35Ae";
 let contractAbi = [
   {
     inputs: [
@@ -67,6 +71,38 @@ let contractAbi = [
       },
     ],
     name: "ApprovalForAll",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "_fromTokenId",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "_toTokenId",
+        type: "uint256",
+      },
+    ],
+    name: "BatchMetadataUpdate",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "_tokenId",
+        type: "uint256",
+      },
+    ],
+    name: "MetadataUpdate",
     type: "event",
   },
   {
@@ -188,7 +224,32 @@ let contractAbi = [
     type: "function",
   },
   {
-    inputs: [],
+    inputs: [
+      {
+        internalType: "string",
+        name: "tokenURI",
+        type: "string",
+      },
+    ],
+    name: "isUriExists",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "tokenURI",
+        type: "string",
+      },
+    ],
     name: "mint",
     outputs: [],
     stateMutability: "nonpayable",
@@ -221,6 +282,25 @@ let contractAbi = [
         internalType: "address",
         name: "",
         type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "ownerAddress",
+        type: "address",
+      },
+    ],
+    name: "ownerOfIds",
+    outputs: [
+      {
+        internalType: "uint256[]",
+        name: "",
+        type: "uint256[]",
       },
     ],
     stateMutability: "view",
@@ -383,270 +463,376 @@ let contractAbi = [
     type: "function",
   },
 ];
+
 async function connectMetamask() {
   if (window.ethereum) {
+    toastr.clear();
     try {
       web3 = new Web3(window.ethereum);
       oContract = new web3.eth.Contract(contractAbi, sContractAddress);
-      const accounts = await window.ethereum.request({
+
+      chainId = await web3.eth.getChainId();
+      $("#network").text("ChainId: " + chainId);
+
+      accounts = await window.ethereum.request({
         method: "eth_requestAccounts",
       });
+      if (chainId !== sepoliaChainId) {
+        let newChainId = web3.utils.toHex(sepoliaChainId);
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: newChainId }],
+        });
+
+        toastr.success("network switched successfully");
+      }
       if (accounts.length) {
-        alert("Wallet connected successfully");
+        toastr.success("Wallet connected successfully");
         $("#account").text("Address:" + accounts[0]);
         aAccount = accounts[0];
         $("#connectBtn").hide();
         $("#disConnectBtn").show();
-        alldetails();
+        await alldetails();
+        await showToken();
       }
-
-      web3.eth.currentProvider.on("accountsChanged", function (accounts) {
+      web3.eth.currentProvider.on("accountsChanged", async function (accounts) {
         if (!accounts.length) {
           location.reload();
         } else {
           aAccount = accounts[0];
+          $("#token-container").empty();
+          await showToken();
+          await alldetails();
+          toastr.success("account changed successfully");
           $("#account").text("Address: " + aAccount);
-          alldetails(aAccount);
         }
       });
-      window.ethereum.on('networkChanged', function(networkId){
-        console.log('networkChanged',networkId);
+      web3.eth.currentProvider.on("chainChanged", async function (chainId) {
+        chainId = await web3.eth.getChainId();
+        $("#network").text("ChainId: " + chainId);
       });
-      
     } catch (error) {
-      console.error("Error connecting to MetaMask:", error);
+      toastr.error("Error connecting to MetaMask:", error);
     }
   } else {
-    alert("MetaMask not available");
     window.location.href = "https://metamask.io/";
   }
 }
 function disConnectMetamask() {
+  $("#connectBtn").show();
+  $("#disConnectBtn").hide();
   location.reload();
-  alert("Wallet disconnected successfully!");
 }
-
-$(document).ready(function () {
-  $("#connectBtn").click(function () {
-    connectMetamask();
-  });
-});
-$(document).ready(function () {
-  $("#disConnectBtn").click(function () {
-    disConnectMetamask();
-    $("#connectBtn").show();
-    $("#disConnectBtn").hide();
-  });
-});
 
 async function mint() {
   try {
-    if (!aAccount) await connectMetamask();
-    const estGas = await oContract.methods
-      .mint()
+    let uri = $("#uri").val();
+    toastr.clear();
+
+    if (!validateURI(uri)) {
+      toastr.warning("A valid uri is required");
+      return;
+    }
+
+    if (!aAccount) {
+      await connectMetamask();
+    } else {
+      chainId = await web3.eth.getChainId();
+      await checkNetwork(chainId);
+    }
+    console.log(await oContract.methods.isUriExists(uri).call());
+
+    if (await oContract.methods.isUriExists(uri).call()) {
+      toastr.warning("Token already minted with this URI");
+      return;
+    }
+
+    $("#mintBtn").prop("disabled", true);
+    const estimateGas = await oContract.methods
+      .mint(uri)
       .estimateGas({ from: aAccount });
 
-    console.log(estGas);
+    console.log(estimateGas);
 
-    await oContract.methods.mint().send({ from: aAccount, gas: estGas });
-    alldetails();
+    await oContract.methods
+      .mint(uri)
+      .send({ from: aAccount, gas: estimateGas });
+    await alldetails();
+    $("#token-container").empty();
+    await showToken();
+    $("#mintBtn").prop("disabled", false);
   } catch (error) {
     if (error.message.includes("User denied")) {
-      alert("You rejected the transaction on Metamask!");
+      toastr.warning("You rejected the transaction on Metamask!");
     } else {
-      alert(error);
+      let oErrorJSON = JSON.parse(
+        error.message.substr(
+          error.message.indexOf("{"),
+          error.message.lastIndexOf("}")
+        )
+      );
+      const oError = oErrorJSON.originalError.message;
+      toastr.error(error);
     }
+    $("#mintBtn").prop("disabled", false);
   }
 }
 
 async function burn() {
   try {
-    if (!aAccount) await connectMetamask();
     let tokenId = $("#burn").val();
-    if (!tokenId || isNaN(tokenId)) {
-      swal({
-        text: "A valid tokenId is required",
-      });
+    toastr.clear();
+    if (
+      !tokenId ||
+      isNaN(tokenId) ||
+      tokenId <= 0 ||
+      !Number.isInteger(Number(tokenId))
+    ) {
+      toastr.warning("A valid tokenId is required");
       return;
     }
+    if (!aAccount) {
+      await connectMetamask();
+    } else {
+      chainId = await web3.eth.getChainId();
+      await checkNetwork(chainId);
+    }
 
-    const estGas = await oContract.methods
+    $("#BurnBtn").prop("disabled", true);
+    const estimateGas = await oContract.methods
       .burn(tokenId)
       .estimateGas({ from: aAccount });
 
-    console.log(estGas);
+    console.log(estimateGas);
 
-    await oContract.methods.burn(tokenId).send({ from: aAccount, gas: estGas });
-    alldetails();
+    await oContract.methods
+      .burn(tokenId)
+      .send({ from: aAccount, gas: estimateGas });
+    await alldetails();
+    $("#token-container").empty();
+    await showToken();
+    $("#BurnBtn").prop("disabled", false);
   } catch (error) {
     if (error.message.includes("User denied")) {
-      alert("You rejected the transaction on Metamask!");
+      toastr.warning("You rejected the transaction on Metamask!");
     } else {
-      alert(error);
+      let oErrorJSON = JSON.parse(
+        error.message.substr(
+          error.message.indexOf("{"),
+          error.message.lastIndexOf("}")
+        )
+      );
+      const oError = oErrorJSON.originalError.message;
+      toastr.error(oError);
     }
+    $("#burnBtn").prop("disabled", false);
   }
 }
 
 async function transferFrom() {
   try {
-    if (!aAccount) await connectMetamask();
     const addressFrom = $("#addressFrom").val();
     const addressTo = $("#addressTo").val();
     const tokenId = $("#tokenId").val();
-
+    toastr.clear();
     if (
       !web3.utils.isAddress(addressFrom) ||
       !web3.utils.isAddress(addressTo)
     ) {
-      swal({
-        text: "A valid address is required",
-      });
+      toastr.warning("A valid address is required");
       return;
     }
     if (addressFrom === addressTo) {
-      swal(swal("Oops", "from address and to address are equal", "error"));
+      toastr.warning("from address and to address are equal");
       return;
     }
-     if (!tokenId || isNaN(tokenId)) { 
-      swal({
-        text: "A valid tokenId is required",
-      });
+    if (
+      !tokenId ||
+      isNaN(tokenId) ||
+      tokenId <= 0 ||
+      !Number.isInteger(Number(tokenId))
+    ) {
+      toastr.warning("A valid tokenId is required");
       return;
     }
-
-    const estGas = await oContract.methods
+    if (!aAccount) {
+      await connectMetamask();
+    } else {
+      chainId = await web3.eth.getChainId();
+      await checkNetwork(chainId);
+    }
+    $("#transferFromBtn").prop("disabled", true);
+    const estimateGas = await oContract.methods
       .transferFrom(addressFrom, addressTo, tokenId)
       .estimateGas({ from: aAccount });
 
-    console.log(estGas);
+    console.log(estimateGas);
 
     await oContract.methods
       .transferFrom(addressFrom, addressTo, tokenId)
-      .send({ from: aAccount, gas: estGas });
-    alldetails();
+      .send({ from: aAccount, gas: estimateGas });
+    await alldetails();
+    $("#token-container").empty();
+    await showToken();
+    $("#transferFromBtn").prop("disabled", false);
   } catch (error) {
     if (error.message.includes("User denied")) {
-      alert("You rejected the transaction on Metamask!");
+      toastr.warning("You rejected the transaction on Metamask!");
     } else {
-      if (error.message.includes("User denied")) {
-        alert("You rejected the transaction on Metamask!");
-      } else {
-        alert(error);
-      }
+      let oErrorJSON = JSON.parse(
+        error.message.substr(
+          error.message.indexOf("{"),
+          error.message.lastIndexOf("}")
+        )
+      );
+      const oError = oErrorJSON.originalError.message;
+      toastr.error(oError);
     }
+    $("#transferFromBtn").prop("disabled", false);
   }
 }
 
 async function ownerOf() {
   try {
-    if (!aAccount) await connectMetamask();
     const tokenId = $("#ownerOf").val();
-    if (!tokenId || isNaN(tokenId)) {
-      swal({
-        text: "A valid tokenId is required",
-      });
+    toastr.clear();
+    if (
+      !tokenId ||
+      isNaN(tokenId) ||
+      tokenId <= 0 ||
+      !Number.isInteger(Number(tokenId))
+    ) {
+      toastr.warning("A valid tokenId is required");
       return;
     }
-
-    console.log(tokenId);
+    if (!aAccount) await connectMetamask();
     const address = await oContract.methods.ownerOf(tokenId).call();
-    swal({
-      text: "owner of token Id:" + tokenId + ":" + address,
-    });
+    button;
+    toastr.success("owner of token Id:" + tokenId + ":" + address);
   } catch (error) {
-    alert(error.message);
+    let oErrorJSON = JSON.parse(
+      error.message.substr(
+        error.message.indexOf("{"),
+        error.message.lastIndexOf("}")
+      )
+    );
+    const oError = oErrorJSON.originalError.message;
+    toastr.error(oError);
   }
 }
 
 async function alldetails() {
   const balance = await oContract.methods.balanceOf(aAccount).call();
   $("#balanceOf").text("Total Balance:" + balance);
-  const totalTokenId = await oContract.methods.totalTokenId().call();
-  $("#totalSupply").text("Total TokenId:" + totalTokenId);
+  totalMintedTokenId = await oContract.methods.totalTokenId().call();
+  $("#totalSupply").text("Total Minted TokenId:" + totalMintedTokenId);
 }
 
 async function setApprovalForAll() {
   try {
-    if (!aAccount) await connectMetamask();
     const isApprovedForAll =
       $("input[name='IsApprovedForAll']:checked").val() === "true"
         ? true
         : false;
     const operator = $("#operatorAddr").val();
+    toastr.clear();
     if (!web3.utils.isAddress(operator)) {
-      swal({
-        text: "A valid address is required",
-      });
+      toastr.warning("A valid address is required");
       return;
     }
+
     if (aAccount === operator) {
-      swal(swal("Oops", "owner can't be operator", "error"));
+      toastr.warning("owner can't be operator");
       return;
     }
+
     if (!typeof isApprovedForAll === "boolean") {
-      swal({
-        text: "Please select true or false",
-      });
+      toastr.warning("Please select true or false");
       return;
     }
-    console.log(isApprovedForAll);
-    const estGas = await oContract.methods
+    if (!aAccount) {
+      await connectMetamask();
+    } else {
+      chainId = await web3.eth.getChainId();
+      await checkNetwork(chainId);
+    }
+    $("#setApprovalForAllBtn").prop("disabled", true);
+    const estimateGas = await oContract.methods
       .setApprovalForAll(operator, isApprovedForAll)
       .estimateGas({ from: aAccount });
 
-    console.log(estGas);
+    console.log(estimateGas);
 
     await oContract.methods
       .setApprovalForAll(operator, isApprovedForAll)
-      .send({ from: aAccount, gas: estGas });
+      .send({ from: aAccount, gas: estimateGas });
+    $("#setApprovalForAllBtn").prop("disabled", false);
   } catch (error) {
     if (error.message.includes("User denied")) {
-      alert("You rejected the transaction on Metamask!");
+      toastr.warning("You rejected the transaction on Metamask!");
     } else {
-      alert(error);
+      let oErrorJSON = JSON.parse(
+        error.message.substr(
+          error.message.indexOf("{"),
+          error.message.lastIndexOf("}")
+        )
+      );
+      const oError = oErrorJSON.originalError.message;
+      toastr.error(oError);
     }
+    $("#setApprovalForAllBtn").prop("disabled", false);
   }
 }
 async function approve() {
   try {
-    if (!aAccount) await connectMetamask();
     const addressTo = $("#approveAddr").val();
     const tokenId = $("#approveTokenId").val();
-
+    toastr.clear();
     if (!web3.utils.isAddress(addressTo)) {
-      swal({
-        text: "A valid address is required",
-      });
+      toastr.warning("A valid address is required");
       return;
     }
 
     if (!tokenId || isNaN(tokenId)) {
-      swal({
-        text: "A valid tokenId is required",
-      });
+      toastr.warning("A valid tokenId is required");
       return;
     }
-
-    const estGas = await oContract.methods
+    if (!aAccount) {
+      await connectMetamask();
+    } else {
+      chainId = await web3.eth.getChainId();
+      await checkNetwork(chainId);
+    }
+    $("#approveBtn").prop("disabled", true);
+    const estimateGas = await oContract.methods
       .approve(addressTo, tokenId)
       .estimateGas({ from: aAccount });
 
-    console.log(estGas);
+    console.log(estimateGas);
 
     await oContract.methods
       .approve(addressTo, tokenId)
-      .send({ from: aAccount, gas: estGas });
+      .send({ from: aAccount, gas: estimateGas });
+    $("#approveBtn").prop("disabled", false);
   } catch (error) {
     if (error.message.includes("User denied")) {
-      alert("You rejected the transaction on Metamask!");
+      toastr.warning("You rejected the transaction on Metamask!");
     } else {
-      alert(error);
+      let oErrorJSON = JSON.parse(
+        error.message.substr(
+          error.message.indexOf("{"),
+          error.message.lastIndexOf("}")
+        )
+      );
+      const oError = oErrorJSON.originalError.message;
+      toastr.error(oError);
     }
+    $("#setApprovalForAllBtn").prop("disabled", false);
   }
 }
+
 async function safeTransferFrom() {
   try {
-    if (!aAccount) await connectMetamask();
     const addressFrom = $("#safeTransferFrom").val();
     const addressTo = $("#safeTransferTo").val();
     const tokenId = $("#safeTransferTokenId").val();
@@ -655,41 +841,124 @@ async function safeTransferFrom() {
       !web3.utils.isAddress(addressFrom) ||
       !web3.utils.isAddress(addressTo)
     ) {
-      swal({
-        text: "A valid address is required",
-      });
+      toastr.warning("A valid address is required");
       return;
     }
     if (addressFrom === addressTo) {
-      swal(swal("Oops", "from address and to address are equal", "error"));
+      toastr.warning("from address and to address are equal");
       return;
     }
+
     if (!tokenId || isNaN(tokenId)) {
       swal({
         text: "A valid tokenId is required",
       });
       return;
     }
-
-    const estGas = await oContract.methods
+    if (
+      !tokenId ||
+      isNaN(tokenId) ||
+      tokenId <= 0 ||
+      !Number.isInteger(Number(tokenId))
+    ) {
+      toastr.warning("A valid tokenId is required");
+      return;
+    }
+    if (!aAccount) {
+      await connectMetamask();
+    } else {
+      chainId = await web3.eth.getChainId();
+      await checkNetwork(chainId);
+    }
+    $("#safeTransferFromBtn").prop("disabled", true);
+    const estimateGas = await oContract.methods
       .safeTransferFrom(addressFrom, addressTo, tokenId)
       .estimateGas({ from: aAccount });
 
-    console.log(estGas);
+    console.log(estimateGas);
 
     await oContract.methods
       .safeTransferFrom(addressFrom, addressTo, tokenId)
-      .send({ from: aAccount, gas: estGas });
-    alldetails();
+      .send({ from: aAccount, gas: estimateGas });
+    await alldetails();
+    $("#token-container").empty();
+    await showToken();
+    $("#safeTransferFromBtn").prop("disabled", false);
   } catch (error) {
     if (error.message.includes("User denied")) {
-      alert("You rejected the transaction on Metamask!");
+      toastr.warning("You rejected the transaction on Metamask!");
     } else {
-      if (error.message.includes("User denied")) {
-        alert("You rejected the transaction on Metamask!");
-      } else {
-        alert(error);
-      }
+      let oErrorJSON = JSON.parse(
+        error.message.substr(
+          error.message.indexOf("{"),
+          error.message.lastIndexOf("}")
+        )
+      );
+      const oError = oErrorJSON.originalError.message;
+      toastr.error(oError);
+    }
+    $("#setApprovalForAllBtn").prop("disabled", false);
+  }
+}
+
+async function checkNetwork(chainId) {
+  if (chainId !== sepoliaChainId) {
+    let newChainId = web3.utils.toHex(sepoliaChainId);
+
+    await window.ethereum.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: newChainId }],
+    });
+    toastr.success("network switched successfully");
+    chainId = await web3.eth.getChainId();
+    $("#network").text("ChainId: " + chainId);
+  }
+}
+
+function validateURI(uri) {
+  try {
+    new URL(uri);
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+async function showToken() {
+  const tokens = await oContract.methods.ownerOfIds(aAccount).call();
+  if (tokens.length === 0) {
+    return;
+  } else {
+    const container = $("#token-container");
+    for (let id = 0; id < tokens.length; id++) {
+      const tokenId = tokens[id];
+      const uri = await oContract.methods.tokenURI(tokenId).call();
+      const response = await fetch(uri);
+      const jsonData = await response.json();
+
+      const newCard = $("<div>")
+        .attr("id", id)
+        .addClass("card")
+        .css("width", "18rem");
+      newCard.append(
+        $("<img>")
+          .attr("src", jsonData.image)
+          .addClass("card-img-top")
+          .attr("alt", "NFT IMAGE"),
+        $("<div>")
+          .addClass("card-body")
+          .append(
+            $("<h5>")
+              .addClass("card-title")
+              .text("Id: " + tokenId),
+            $("<h5>")
+              .addClass("card-title")
+              .text("Name: " + jsonData.name),
+              $("<h5>")
+              .addClass("card-title")
+              .text("Description: " + jsonData.description)
+          )
+      );
+      container.append(newCard);
     }
   }
 }

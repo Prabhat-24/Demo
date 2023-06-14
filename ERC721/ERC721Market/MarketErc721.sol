@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "./Erc721.sol";
-import "../ERC20/Token20.sol";
+import "../TASK/ERC20";
 
 contract MarketErc721 {
     struct Sale {

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-import "./Erc721/Erc721Token.sol";
+import "./Erc721/Erc721.sol";
 import "./Erc1155/Erc1155.sol";
 
 contract Market {

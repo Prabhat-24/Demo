@@ -1,44 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM"
+      crossorigin="anonymous"
+    />
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
+      crossorigin="anonymous"
+    ></script>
+
     <script src="https://cdn.jsdelivr.net/npm/web3@1.5.0/dist/web3.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="./ERC721.js"></script>
     <link rel="stylesheet" href="ERC721.css" />
-
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.js"></script>
     <title>ERC721</title>
   </head>
   <body>
     <h1>ERC721</h1>
 
     <p id="account">Account</p>
-    <p id="totalSupply">Total TokenId</p>
+    <p id="totalSupply">Total Minted TokenId</p>
     <p id="balanceOf">Total Balance</p>
-
-    <div class="connect">
-      <button id="connectBtn">Connect</button>
-      <button id="disConnectBtn" style="display: none">Disconnect</button>
-    </div>
+    <p id="network">ChainId</p>
 
     <div class="input-container">
+      <button id="connectBtn" onclick="connectMetamask()">Connect</button>
+      <button
+        id="disConnectBtn"
+        onclick="disConnectMetamask()"
+        style="display: none"
+      >
+        Disconnect
+      </button>
+    </div>
+    <div class="input-container">
+      <label>Mint</label><br />
+      <input id="uri" type="text" placeholder="Enter url" />
       <button id="mintBtn" onclick="mint()">Mint</button>
     </div>
     <div class="input-container">
+      <label>OwnerOf</label><br />
       <input id="ownerOf" type="number" placeholder="Enter tokenId" />
-      <button id="ownerOfBtn" onclick="ownerOf()">OwnerOfToken</button>
+      <button id="ownerOfBtn" onclick="ownerOf()">Check</button>
     </div>
 
     <div class="input-container">
+      <label>Burn</label><br />
       <input id="burn" type="number" placeholder="Enter tokenId" />
       <button id="burnBtn" onclick="burn()">Burn</button>
     </div>
     <div class="input-container">
+      <label>Approve</label><br />
       <input id="approveAddr" type="text" placeholder="Enter to address" />
       <input id="approveTokenId" type="number" placeholder="Enter tokenId" />
       <button id="approveBtn" type="button" onclick="approve()">Approve</button>
     </div>
-    <div>
+    <div class="input-container">
+      <label> SetApprovalForAll</label><br />
+
       <input
         id="operatorAddr"
         type="text"
@@ -57,19 +86,21 @@
         type="button"
         onclick="setApprovalForAll()"
       >
-        SetApprovalForAll
+        Approve
       </button>
     </div>
     <div class="input-container">
+      <label>TransferFrom</label><br />
       <input id="addressFrom" type="text" placeholder="Enter from address" />
       <input id="addressTo" type="text" placeholder="Enter to address" />
       <input id="tokenId" type="number" placeholder="Enter tokenId" />
       <button id="transferFromBtn" type="button" onclick="transferFrom()">
-        TransferFrom
+        Transfer
       </button>
     </div>
 
     <div class="input-container">
+      <label>SafeTransferFrom</label>
       <input
         id="safeTransferFrom"
         type="text"
@@ -86,8 +117,12 @@
         type="button"
         onclick="safeTransferFrom()"
       >
-        SafeTransferFrom
+        Transfer
       </button>
+    </div>
+    <div class="nft-container">
+      <h1>Token Cards</h1>
+      <div id="token-container"></div>
     </div>
   </body>
 </html>

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 import "./Erc721/IERC721.sol";
 import "./Erc1155/IERC1155.sol";
-import "./Erc721/ERC165.sol";
+import "../IERC165.sol";
 
 contract UpdateMarket {
     struct AuctionDetails {

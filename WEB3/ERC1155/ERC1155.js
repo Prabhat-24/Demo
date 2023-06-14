@@ -3,7 +3,7 @@ let aAccount = "";
 let oContract;
 let accounts;
 let chainId;
-let sepoliaChainId = 11155111;
+const sepoliaChainId = 11155111;
 let sContractAddress = "0xf0AB59555094a45f4fbF97987E4A34dabA8FF480";
 let contractAbi = [
   {
@@ -404,26 +404,31 @@ let contractAbi = [
 ];
 async function connectMetamask() {
   if (window.ethereum) {
+    toastr.clear();
     try {
       web3 = new Web3(window.ethereum);
-      chainId = await web3.eth.getChainId();
+
       oContract = new web3.eth.Contract(contractAbi, sContractAddress);
+
+      chainId = await web3.eth.getChainId();
+      $("#network").text("ChainId: " + chainId);
 
       accounts = await window.ethereum.request({
         method: "eth_requestAccounts",
       });
+
       if (chainId !== sepoliaChainId) {
-        let newChainId = "0x" + sepoliaChainId.toString(16);
+        let newChainId = web3.utils.toHex(sepoliaChainId);
 
         await window.ethereum.request({
           method: "wallet_switchEthereumChain",
           params: [{ chainId: newChainId }],
         });
-      } else {
-        $("#network").text("ChainId: " + chainId);
+
+        toastr.success("network switched successfully");
       }
 
-      if (accounts.length > 0) {
+      if (accounts.length) {
         toastr.success("Wallet connected successfully");
 
         $("#account").text("Address:" + accounts[0]);
@@ -434,7 +439,7 @@ async function connectMetamask() {
       }
 
       web3.eth.currentProvider.on("accountsChanged", function (accounts) {
-        if (accounts.length === 0) {
+        if (!accounts.length) {
           location.reload();
         } else {
           aAccount = accounts[0];
@@ -442,18 +447,10 @@ async function connectMetamask() {
           $("#account").text("Address: " + aAccount);
         }
       });
+
       web3.eth.currentProvider.on("chainChanged", async function (chainId) {
         chainId = await web3.eth.getChainId();
         $("#network").text("ChainId: " + chainId);
-        if (chainId !== sepoliaChainId) {
-          let newChainId = "0x" + sepoliaChainId.toString(16);
-          await window.ethereum.request({
-            method: "wallet_switchEthereumChain",
-            params: [{ chainId: newChainId }],
-          });
-        } else {
-          $("#network").text("ChainId: " + chainId);
-        }
       });
     } catch (error) {
       toastr.error("Error connecting to MetaMask:", error);
@@ -471,18 +468,36 @@ function disConnectMetamask() {
 
 async function mint() {
   try {
-    if (!aAccount) await connectMetamask();
     const tokenId = $("#mintId").val();
     const mintQuantity = $("#mintAmount").val();
+    toastr.clear();
 
-    if (!tokenId || isNaN(tokenId)) {
+    if (
+      !tokenId ||
+      isNaN(tokenId) ||
+      tokenId <= 0 ||
+      !Number.isInteger(Number(tokenId))
+    ) {
       toastr.warning("A valid tokenId is required");
       return;
     }
-    if (!mintQuantity || isNaN(mintQuantity)) {
+
+    if (
+      !mintQuantity ||
+      isNaN(mintQuantity) ||
+      mintQuantity <= 0 ||
+      !Number.isInteger(Number(mintQuantity))
+    ) {
       toastr.warning("A valid amount is required");
       return;
     }
+    if (!aAccount) {
+      await connectMetamask();
+    } else {
+      chainId = await web3.eth.getChainId();
+      await checkNetwork(chainId);
+    }
+
     $("#mintBtn").prop("disabled", true);
     const estimateGas = await oContract.methods
       .mint(tokenId, mintQuantity)
@@ -498,7 +513,14 @@ async function mint() {
     if (error.message.includes("User denied")) {
       toastr.warning("You rejected the transaction on Metamask!");
     } else {
-      toastr.error(error.message);
+      let oErrorJSON = JSON.parse(
+        error.message.substr(
+          error.message.indexOf("{"),
+          error.message.lastIndexOf("}")
+        )
+      );
+      const oError = oErrorJSON.originalError.message;
+      toastr.error(oError);
     }
     $("#mintBtn").prop("disabled", false);
   }
@@ -506,18 +528,33 @@ async function mint() {
 
 async function burn() {
   try {
-    if (!aAccount) await connectMetamask();
     const tokenId = $("#burnId").val();
     const burnQuantity = $("#burnAmount").val();
-
-    if (!tokenId || isNaN(tokenId)) {
+    toastr.clear();
+    if (
+      !tokenId ||
+      isNaN(tokenId) ||
+      tokenId <= 0 ||
+      !Number.isInteger(Number(tokenId))
+    ) {
       toastr.warning("A valid tokenId is required");
       return;
     }
 
-    if (!burnQuantity || isNaN(burnQuantity)) {
+    if (
+      !burnQuantity ||
+      isNaN(burnQuantity) ||
+      burnQuantity <= 0 ||
+      !Number.isInteger(Number(burnQuantity))
+    ) {
       toastr.warning("A valid amount is required");
       return;
+    }
+    if (!aAccount) {
+      await connectMetamask();
+    } else {
+      chainId = await web3.eth.getChainId();
+      await checkNetwork(chainId);
     }
     $("#BurnBtn").prop("disabled", true);
 
@@ -531,12 +568,19 @@ async function burn() {
       .burn(tokenId, burnQuantity)
       .send({ from: aAccount, gas: estimateGas });
 
-    $("#mintBtn").prop("disabled", false);
+    $("#BurnBtn").prop("disabled", false);
   } catch (error) {
     if (error.message.includes("User denied")) {
       toastr.warning("You rejected the transaction on Metamask!");
     } else {
-      toastr.error(error.message);
+      let oErrorJSON = JSON.parse(
+        error.message.substr(
+          error.message.indexOf("{"),
+          error.message.lastIndexOf("}")
+        )
+      );
+      const oError = oErrorJSON.originalError.message;
+      toastr.error(oError);
     }
     $("#BurnBtn").prop("disabled", false);
   }
@@ -544,11 +588,15 @@ async function burn() {
 
 async function balanceOf() {
   try {
-    if (!aAccount) await connectMetamask();
     const tokenId = $("#tokenId").val();
     const address = $("#address").val();
-
-    if (!tokenId || isNaN(tokenId)) {
+    toastr.clear();
+    if (
+      !tokenId ||
+      isNaN(tokenId) ||
+      tokenId <= 0 ||
+      !Number.isInteger(Number(tokenId))
+    ) {
       toastr.warning("A valid tokenId is required");
       return;
     }
@@ -557,7 +605,7 @@ async function balanceOf() {
       toastr.warning("A valid address is required");
       return;
     }
-
+    if (!aAccount) await connectMetamask();
     const balance = await oContract.methods.balanceOf(address, tokenId).call();
     toastr.success("Balance of " + address + ": " + balance);
   } catch (error) {
@@ -567,13 +615,14 @@ async function balanceOf() {
 
 async function isApprovedForAll() {
   try {
-    if (!aAccount) await connectMetamask();
     const owner = $("#addrOwner").val();
     const operator = $("#addrOperator").val();
+    toastr.clear();
     if (!web3.utils.isAddress(owner) || !web3.utils.isAddress(operator)) {
       toastr.warning("A valid address is required");
       return;
     }
+    if (!aAccount) await connectMetamask();
     const isApproved = await oContract.methods
       .isApprovedForAll(owner, operator)
       .call();
@@ -585,13 +634,12 @@ async function isApprovedForAll() {
 
 async function setApprovalForAll() {
   try {
-    if (!aAccount) await connectMetamask();
     const isApprovedForAll =
       $("input[name='IsApprovedForAll']:checked").val() === "true"
         ? true
         : false;
     const operator = $("#operatorAddr").val();
-
+    toastr.clear();
     if (!web3.utils.isAddress(operator)) {
       toastr.warning("A valid address is required");
       return;
@@ -606,10 +654,11 @@ async function setApprovalForAll() {
       toastr.warning("Please select true or false");
       return;
     }
-
-    if (!typeof isApprovedForAll === "boolean") {
-      toastr.warning("please select true or false");
-      return;
+    if (!aAccount) {
+      await connectMetamask();
+    } else {
+      chainId = await web3.eth.getChainId();
+      await checkNetwork(chainId);
     }
     $("#setApprovalBtn").prop("disabled", true);
 
@@ -628,7 +677,14 @@ async function setApprovalForAll() {
     if (error.message.includes("User denied")) {
       toastr.warning("You rejected the transaction on Metamask!");
     } else {
-      toastr.error(error.message);
+      let oErrorJSON = JSON.parse(
+        error.message.substr(
+          error.message.indexOf("{"),
+          error.message.lastIndexOf("}")
+        )
+      );
+      const oError = oErrorJSON.originalError.message;
+      toastr.error(oError);
     }
     $("#setApprovalBtn").prop("disabled", false);
   }
@@ -636,11 +692,11 @@ async function setApprovalForAll() {
 
 async function safeTransferFrom() {
   try {
-    if (!aAccount) await connectMetamask();
     const addressFrom = $("#safeTransferFrom").val();
     const addressTo = $("#safeTransferTo").val();
     const tokenId = $("#safeTransferTokenId").val();
     const amount = $("#safeTransferAmount").val();
+    toastr.clear();
     if (
       !web3.utils.isAddress(addressFrom) ||
       !web3.utils.isAddress(addressTo)
@@ -652,13 +708,29 @@ async function safeTransferFrom() {
       toastr.warning("from address and to address are equal");
       return;
     }
-    if (!tokenId || isNaN(tokenId)) {
+    if (
+      !tokenId ||
+      isNaN(tokenId) ||
+      tokenId <= 0 ||
+      !Number.isInteger(Number(tokenId))
+    ) {
       toastr.warning("A valid tokenId is required");
       return;
     }
-    if (!amount || isNaN(amount)) {
+    if (
+      !amount ||
+      isNaN(amount) ||
+      amount <= 0 ||
+      !Number.isInteger(number(amount))
+    ) {
       toastr.warning("A valid amount is required");
       return;
+    }
+    if (!aAccount) {
+      await connectMetamask();
+    } else {
+      chainId = await web3.eth.getChainId();
+      await checkNetwork(chainId);
     }
     $("#safeTransferFromBtn").prop("disabled", true);
 
@@ -677,7 +749,14 @@ async function safeTransferFrom() {
     if (error.message.includes("User denied")) {
       toastr.warning("You rejected the transaction on Metamask!");
     } else {
-      toastr.error(error.message);
+      let oErrorJSON = JSON.parse(
+        error.message.substr(
+          error.message.indexOf("{"),
+          error.message.lastIndexOf("}")
+        )
+      );
+      const oError = oErrorJSON.originalError.message;
+      toastr.error(oError);
     }
     $("#safeTransferFromBtn").prop("disabled", false);
   }
@@ -685,24 +764,44 @@ async function safeTransferFrom() {
 
 async function mintBatch() {
   try {
-    if (!aAccount) await connectMetamask();
     const ids = $("#mintIds").val();
     const amounts = $("#mintAmounts").val();
 
     const aIds = ids.split(",").map(Number);
     const aAmounts = amounts.split(",").map(Number);
-
+    toastr.clear();
     for (let i = 0; i < aIds.length; i++) {
-      if (!aIds[i] || isNaN(aIds[i])) {
+      if (
+        !aIds[i] ||
+        isNaN(aIds[i]) ||
+        aIds[i] <= 0 ||
+        !Number.isInteger(Number(aIds[i]))
+      ) {
         toastr.warning("valid token Ids required");
         return;
       }
     }
+
     for (let i = 0; i < aAmounts.length; i++) {
-      if (!aAmounts[i] || isNaN(aAmounts[i])) {
+      if (
+        !aAmounts[i] ||
+        isNaN(aAmounts[i]) ||
+        aAmounts[i] <= 0 ||
+        !Number.isInteger(Number(aAmounts[i]))
+      ) {
         toastr.warning("valid amounts required");
         return;
       }
+    }
+    if (aIds.length !== aAmounts.length) {
+      toastr.warning("Length Mismatch");
+      return;
+    }
+    if (!aAccount) {
+      await connectMetamask();
+    } else {
+      chainId = await web3.eth.getChainId();
+      await checkNetwork(chainId);
     }
     $("#mintBatchBtn").prop("disabled", true);
 
@@ -721,7 +820,14 @@ async function mintBatch() {
     if (error.message.includes("User denied")) {
       toastr.warning("You rejected the transaction on Metamask!");
     } else {
-      toastr.error(error.message);
+      let oErrorJSON = JSON.parse(
+        error.message.substr(
+          error.message.indexOf("{"),
+          error.message.lastIndexOf("}")
+        )
+      );
+      const oError = oErrorJSON.originalError.message;
+      toastr.error(oError);
     }
     $("#mintBatchBtn").prop("disabled", false);
   }
@@ -729,26 +835,45 @@ async function mintBatch() {
 
 async function burnBatch() {
   try {
-    if (!aAccount) await connectMetamask();
-
     const ids = $("#burnIds").val();
     const amounts = $("#burnAmounts").val();
 
     const aIds = ids.split(",").map(Number);
     const aAmounts = amounts.split(",").map(Number);
-
+    toastr.clear();
     for (let i = 0; i < aIds.length; i++) {
-      if (!aIds[i] || isNaN(aIds[i])) {
+      if (
+        !aIds[i] ||
+        isNaN(aIds[i]) ||
+        aIds[i] <= 0 ||
+        !Number.isInteger(Number(aIds[i]))
+      ) {
         toastr.warning("valid token Ids required");
         return;
       }
     }
     for (let i = 0; i < aAmounts.length; i++) {
-      if (!aAmounts[i] || isNaN(aAmounts[i])) {
+      if (
+        !aAmounts[i] ||
+        isNaN(aAmounts[i]) ||
+        aAmounts[i] <= 0 ||
+        !Number.isInteger(Number(aAmounts[i]))
+      ) {
         toastr.warning("valid amounts required");
         return;
       }
     }
+    if (aIds.length !== aAmounts.length) {
+      toastr.warning("Length Mismatch");
+      return;
+    }
+    if (!aAccount) {
+      await connectMetamask();
+    } else {
+      chainId = await web3.eth.getChainId();
+      await checkNetwork(chainId);
+    }
+
     $("#burnBatchBtn").prop("disabled", true);
 
     const estimateGas = await oContract.methods
@@ -766,7 +891,14 @@ async function burnBatch() {
     if (error.message.includes("User denied")) {
       toastr.warning("You rejected the transaction on Metamask!");
     } else {
-      toastr.error(error.message);
+      let oErrorJSON = JSON.parse(
+        error.message.substr(
+          error.message.indexOf("{"),
+          error.message.lastIndexOf("}")
+        )
+      );
+      const oError = oErrorJSON.originalError.message;
+      toastr.error(oError);
     }
     $("#burnBatchBtn").prop("disabled", false);
   }
@@ -774,14 +906,13 @@ async function burnBatch() {
 
 async function safeBatchTransferFrom() {
   try {
-    if (!aAccount) await connectMetamask();
     const addressFrom = $("#BatchTransferFrom").val();
     const addressTo = $("#BatchTransferTo").val();
     const ids = $("#BatchTransferIds").val();
     const amounts = $("#BatchTransferAmounts").val();
     const aIds = ids.split(",").map(Number);
     const aAmounts = amounts.split(",").map(Number);
-
+    toastr.clear();
     if (
       !web3.utils.isAddress(addressFrom) ||
       !web3.utils.isAddress(addressTo)
@@ -795,17 +926,40 @@ async function safeBatchTransferFrom() {
     }
 
     for (let i = 0; i < aIds.length; i++) {
-      if (!aIds[i] || isNaN(aIds[i])) {
+      if (
+        !aIds[i] ||
+        isNaN(aIds[i]) ||
+        aIds[i] <= 0 ||
+        !Number.isInteger(Number(aIds[i]))
+      ) {
         toastr.warning("valid token Ids required");
         return;
       }
     }
     for (let i = 0; i < aAmounts.length; i++) {
-      if (!aAmounts[i] || isNaN(aAmounts[i])) {
+      if (
+        !aAmounts[i] ||
+        isNaN(aAmounts[i]) ||
+        aAmounts[i] <= 0 ||
+        !Number.isInteger(Number(aAmounts[i]))
+      ) {
         toastr.warning("valid amounts required");
         return;
       }
     }
+    if (aIds.length !== aAmounts.length) {
+      toastr.warning("Length Mismatch");
+      ismatch;
+      return;
+    }
+
+    if (!aAccount) {
+      await connectMetamask();
+    } else {
+      chainId = await web3.eth.getChainId();
+      await checkNetwork(chainId);
+    }
+
     $("#safeBatchTransferFromBtn").prop("disabled", true);
 
     const estimateGas = await oContract.methods
@@ -823,8 +977,29 @@ async function safeBatchTransferFrom() {
     if (error.message.includes("User denied")) {
       toastr.warning("You rejected the transaction on Metamask!");
     } else {
-      toastr.error(error);
+      let oErrorJSON = JSON.parse(
+        error.message.substr(
+          error.message.indexOf("{"),
+          error.message.lastIndexOf("}")
+        )
+      );
+      const oError = oErrorJSON.originalError.message;
+      toastr.error(oError);
     }
     $("#safeBatchTransferFromBtn").prop("disabled", false);
+  }
+}
+
+async function checkNetwork(chainId) {
+  if (chainId !== sepoliaChainId) {
+    let newChainId = web3.utils.toHex(sepoliaChainId);
+
+    await window.ethereum.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: newChainId }],
+    });
+    toastr.success("network switched successfully");
+    chainId = await web3.eth.getChainId();
+    $("#network").text("ChainId: " + chainId);
   }
 }
