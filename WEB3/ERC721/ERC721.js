@@ -836,7 +836,7 @@ async function safeTransferFrom() {
     const addressFrom = $("#safeTransferFrom").val();
     const addressTo = $("#safeTransferTo").val();
     const tokenId = $("#safeTransferTokenId").val();
-    console.log(tokenId);
+
     if (
       !web3.utils.isAddress(addressFrom) ||
       !web3.utils.isAddress(addressTo)
@@ -849,12 +849,6 @@ async function safeTransferFrom() {
       return;
     }
 
-    if (!tokenId || isNaN(tokenId)) {
-      swal({
-        text: "A valid tokenId is required",
-      });
-      return;
-    }
     if (
       !tokenId ||
       isNaN(tokenId) ||
@@ -923,42 +917,28 @@ function validateURI(uri) {
     return false;
   }
 }
+
 async function showToken() {
   const tokens = await oContract.methods.ownerOfIds(aAccount).call();
   if (tokens.length === 0) {
     return;
   } else {
-    const container = $("#token-container");
     for (let id = 0; id < tokens.length; id++) {
       const tokenId = tokens[id];
       const uri = await oContract.methods.tokenURI(tokenId).call();
       const response = await fetch(uri);
       const jsonData = await response.json();
 
-      const newCard = $("<div>")
-        .attr("id", id)
-        .addClass("card")
-        .css("width", "18rem");
-      newCard.append(
-        $("<img>")
-          .attr("src", jsonData.image)
-          .addClass("card-img-top")
-          .attr("alt", "NFT IMAGE"),
-        $("<div>")
-          .addClass("card-body")
-          .append(
-            $("<h5>")
-              .addClass("card-title")
-              .text("Id: " + tokenId),
-            $("<h5>")
-              .addClass("card-title")
-              .text("Name: " + jsonData.name),
-              $("<h5>")
-              .addClass("card-title")
-              .text("Description: " + jsonData.description)
-          )
-      );
-      container.append(newCard);
+      $("#token-container").append(`
+        <div id=${id} class="card" style="width: 18rem;">
+          <img src="${jsonData.image}" class="card-img-top" alt="NFT IMAGE">
+          <div class="card-body">
+            <h5 class="card-title">Id: ${tokenId}</h5>
+            <h5 class="card-title">Name: ${jsonData.name}</h5>
+            <h5 class="card-title">Description: ${jsonData.description}</h5>
+          </div>
+        </div>
+      `);
     }
   }
 }

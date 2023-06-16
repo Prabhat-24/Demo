@@ -3,17 +3,12 @@ let aAccount = "";
 let oContract;
 let accounts;
 let chainId;
+let estimateGas;
 const sepoliaChainId = 11155111;
-let sContractAddress = "0xf0AB59555094a45f4fbF97987E4A34dabA8FF480";
+let sContractAddress = "0xebA9c81A47D7edE38668e44cECb2B749539cc002";
 let contractAbi = [
   {
-    inputs: [
-      {
-        internalType: "string",
-        name: "uri",
-        type: "string",
-      },
-    ],
+    inputs: [],
     stateMutability: "nonpayable",
     type: "constructor",
   },
@@ -41,6 +36,172 @@ let contractAbi = [
     ],
     name: "ApprovalForAll",
     type: "event",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "quantity",
+        type: "uint256",
+      },
+    ],
+    name: "burn",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256[]",
+        name: "tokenIds",
+        type: "uint256[]",
+      },
+      {
+        internalType: "uint256[]",
+        name: "quantitys",
+        type: "uint256[]",
+      },
+    ],
+    name: "burnBatch",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "quantity",
+        type: "uint256",
+      },
+      {
+        internalType: "string",
+        name: "tokenURI",
+        type: "string",
+      },
+    ],
+    name: "mint",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256[]",
+        name: "tokenIds",
+        type: "uint256[]",
+      },
+      {
+        internalType: "uint256[]",
+        name: "quantitys",
+        type: "uint256[]",
+      },
+      {
+        internalType: "string[]",
+        name: "uris",
+        type: "string[]",
+      },
+    ],
+    name: "mintBatch",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "from",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "to",
+        type: "address",
+      },
+      {
+        internalType: "uint256[]",
+        name: "ids",
+        type: "uint256[]",
+      },
+      {
+        internalType: "uint256[]",
+        name: "amounts",
+        type: "uint256[]",
+      },
+      {
+        internalType: "bytes",
+        name: "data",
+        type: "bytes",
+      },
+    ],
+    name: "safeBatchTransferFrom",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "from",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "to",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+      {
+        internalType: "bytes",
+        name: "data",
+        type: "bytes",
+      },
+    ],
+    name: "safeTransferFrom",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "operator",
+        type: "address",
+      },
+      {
+        internalType: "bool",
+        name: "approved",
+        type: "bool",
+      },
+    ],
+    name: "setApprovalForAll",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     anonymous: false,
@@ -138,6 +299,25 @@ let contractAbi = [
   {
     inputs: [
       {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    name: "_isUriExists",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "address",
         name: "account",
         type: "address",
@@ -186,42 +366,6 @@ let contractAbi = [
   {
     inputs: [
       {
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "numberOfTokens",
-        type: "uint256",
-      },
-    ],
-    name: "burn",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256[]",
-        name: "tokenIds",
-        type: "uint256[]",
-      },
-      {
-        internalType: "uint256[]",
-        name: "numberOfTokens",
-        type: "uint256[]",
-      },
-    ],
-    name: "burnBatch",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         internalType: "address",
         name: "account",
         type: "address",
@@ -246,121 +390,20 @@ let contractAbi = [
   {
     inputs: [
       {
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "numberOfTokens",
-        type: "uint256",
+        internalType: "address",
+        name: "ownerAddress",
+        type: "address",
       },
     ],
-    name: "mint",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
+    name: "ownerOfIds",
+    outputs: [
       {
         internalType: "uint256[]",
-        name: "tokenIds",
-        type: "uint256[]",
-      },
-      {
-        internalType: "uint256[]",
-        name: "numberOfTokens",
+        name: "",
         type: "uint256[]",
       },
     ],
-    name: "mintBatch",
-    outputs: [],
-    stateMutability: "payable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        internalType: "uint256[]",
-        name: "ids",
-        type: "uint256[]",
-      },
-      {
-        internalType: "uint256[]",
-        name: "amounts",
-        type: "uint256[]",
-      },
-      {
-        internalType: "bytes",
-        name: "data",
-        type: "bytes",
-      },
-    ],
-    name: "safeBatchTransferFrom",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "id",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-      {
-        internalType: "bytes",
-        name: "data",
-        type: "bytes",
-      },
-    ],
-    name: "safeTransferFrom",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "operator",
-        type: "address",
-      },
-      {
-        internalType: "bool",
-        name: "approved",
-        type: "bool",
-      },
-    ],
-    name: "setApprovalForAll",
-    outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -386,7 +429,7 @@ let contractAbi = [
     inputs: [
       {
         internalType: "uint256",
-        name: "",
+        name: "tokenId",
         type: "uint256",
       },
     ],
@@ -433,16 +476,19 @@ async function connectMetamask() {
 
         $("#account").text("Address:" + accounts[0]);
         aAccount = accounts[0];
-
+        $("#token-container").empty();
+        await showToken();
         $("#connectBtn").hide();
         $("#disConnectBtn").show();
       }
 
-      web3.eth.currentProvider.on("accountsChanged", function (accounts) {
+      web3.eth.currentProvider.on("accountsChanged", async function (accounts) {
         if (!accounts.length) {
           location.reload();
         } else {
           aAccount = accounts[0];
+          $("#token-container").empty();
+          await showToken();
           toastr.success("account changed successfully");
           $("#account").text("Address: " + aAccount);
         }
@@ -470,6 +516,8 @@ async function mint() {
   try {
     const tokenId = $("#mintId").val();
     const mintQuantity = $("#mintAmount").val();
+    let uri = $("#uri").val();
+    console.log(uri);
     toastr.clear();
 
     if (
@@ -491,28 +539,29 @@ async function mint() {
       toastr.warning("A valid amount is required");
       return;
     }
+    if (!validateURI(uri)) {
+      toastr.warning("A valid uri is required");
+      return;
+    }
     if (!aAccount) {
       await connectMetamask();
     } else {
       chainId = await web3.eth.getChainId();
       await checkNetwork(chainId);
     }
-
+    const _isUriExists = await oContract.methods._isUriExists(uri).call();
+    if (_isUriExists) {
+      console.log(_isUriExists);
+      toastr.warning("URI already exists use mint with out uri");
+      return;
+    }
     $("#mintBtn").prop("disabled", true);
-    const estimateGas = await oContract.methods
-      .mint(tokenId, mintQuantity)
-      .estimateGas({ from: aAccount });
-
-    console.log(estimateGas);
-
-    await oContract.methods
-      .mint(tokenId, mintQuantity)
-      .send({ from: aAccount, gas: estimateGas });
-    $("#mintBtn").prop("disabled", false);
-  } catch (error) {
-    if (error.message.includes("User denied")) {
-      toastr.warning("You rejected the transaction on Metamask!");
-    } else {
+    try {
+      estimateGas = await oContract.methods
+        .mint(tokenId, mintQuantity, uri)
+        .estimateGas({ from: aAccount });
+      console.log(estimateGas);
+    } catch (error) {
       let oErrorJSON = JSON.parse(
         error.message.substr(
           error.message.indexOf("{"),
@@ -520,7 +569,28 @@ async function mint() {
         )
       );
       const oError = oErrorJSON.originalError.message;
-      toastr.error(oError);
+      if (error.message.includes("ERC1155")) {
+        toastr.error(oError);
+      } else {
+        toastr.error(error.message);
+      }
+
+      $("#mintBtn").prop("disabled", false);
+      return;
+    }
+
+    await oContract.methods
+      .mint(tokenId, mintQuantity, uri)
+      .send({ from: aAccount, gas: estimateGas });
+
+    $("#token-container").empty();
+    await showToken();
+    $("#mintBtn").prop("disabled", false);
+  } catch (error) {
+    if (error.message.includes("User denied")) {
+      toastr.warning("You rejected the transaction on Metamask!");
+    } else {
+      toastr.error(error.message);
     }
     $("#mintBtn").prop("disabled", false);
   }
@@ -530,6 +600,7 @@ async function burn() {
   try {
     const tokenId = $("#burnId").val();
     const burnQuantity = $("#burnAmount").val();
+
     toastr.clear();
     if (
       !tokenId ||
@@ -557,22 +628,13 @@ async function burn() {
       await checkNetwork(chainId);
     }
     $("#BurnBtn").prop("disabled", true);
-
-    const estimateGas = await oContract.methods
-      .burn(tokenId, burnQuantity)
-      .estimateGas({ from: aAccount });
-
-    console.log(estimateGas);
-
-    await oContract.methods
-      .burn(tokenId, burnQuantity)
-      .send({ from: aAccount, gas: estimateGas });
-
-    $("#BurnBtn").prop("disabled", false);
-  } catch (error) {
-    if (error.message.includes("User denied")) {
-      toastr.warning("You rejected the transaction on Metamask!");
-    } else {
+    try {
+      estimateGas = await oContract.methods
+        .burn(tokenId, burnQuantity)
+        .estimateGas({ from: aAccount });
+      console.log(estimateGas);
+      $("#BurnBtn").prop("disabled", true);
+    } catch (error) {
       let oErrorJSON = JSON.parse(
         error.message.substr(
           error.message.indexOf("{"),
@@ -580,7 +642,26 @@ async function burn() {
         )
       );
       const oError = oErrorJSON.originalError.message;
-      toastr.error(oError);
+      if (error.message.includes("ERC1155")) {
+        toastr.error(oError);
+      } else {
+        toastr.error(error.message);
+      }
+      $("#BurnBtn").prop("disabled", false);
+      return;
+    }
+
+    await oContract.methods
+      .burn(tokenId, burnQuantity)
+      .send({ from: aAccount, gas: estimateGas });
+    $("#token-container").empty();
+    await showToken();
+    $("#BurnBtn").prop("disabled", false);
+  } catch (error) {
+    if (error.message.includes("User denied")) {
+      toastr.warning("You rejected the transaction on Metamask!");
+    } else {
+      toastr.error(error.message);
     }
     $("#BurnBtn").prop("disabled", false);
   }
@@ -605,7 +686,12 @@ async function balanceOf() {
       toastr.warning("A valid address is required");
       return;
     }
-    if (!aAccount) await connectMetamask();
+    if (!aAccount) {
+      await connectMetamask();
+    } else {
+      chainId = await web3.eth.getChainId();
+      await checkNetwork(chainId);
+    }
     const balance = await oContract.methods.balanceOf(address, tokenId).call();
     toastr.success("Balance of " + address + ": " + balance);
   } catch (error) {
@@ -622,7 +708,12 @@ async function isApprovedForAll() {
       toastr.warning("A valid address is required");
       return;
     }
-    if (!aAccount) await connectMetamask();
+    if (!aAccount) {
+      await connectMetamask();
+    } else {
+      chainId = await web3.eth.getChainId();
+      await checkNetwork(chainId);
+    }
     const isApproved = await oContract.methods
       .isApprovedForAll(owner, operator)
       .call();
@@ -640,6 +731,7 @@ async function setApprovalForAll() {
         : false;
     const operator = $("#operatorAddr").val();
     toastr.clear();
+
     if (!web3.utils.isAddress(operator)) {
       toastr.warning("A valid address is required");
       return;
@@ -662,11 +754,28 @@ async function setApprovalForAll() {
     }
     $("#setApprovalBtn").prop("disabled", true);
 
-    const estimateGas = await oContract.methods
-      .setApprovalForAll(operator, isApprovedForAll)
-      .estimateGas({ from: aAccount });
+    try {
+      estimateGas = await oContract.methods
+        .setApprovalForAll(operator, isApprovedForAll)
+        .estimateGas({ from: aAccount });
 
-    console.log(estimateGas);
+      console.log(estimateGas);
+    } catch (error) {
+      let oErrorJSON = JSON.parse(
+        error.message.substr(
+          error.message.indexOf("{"),
+          error.message.lastIndexOf("}")
+        )
+      );
+      const oError = oErrorJSON.originalError.message;
+      if (error.message.includes("ERC1155")) {
+        toastr.error(oError);
+      } else {
+        toastr.error(error.message);
+      }
+      $("#setApprovalBtn").prop("disabled", false);
+      return;
+    }
 
     await oContract.methods
       .setApprovalForAll(operator, isApprovedForAll)
@@ -677,14 +786,7 @@ async function setApprovalForAll() {
     if (error.message.includes("User denied")) {
       toastr.warning("You rejected the transaction on Metamask!");
     } else {
-      let oErrorJSON = JSON.parse(
-        error.message.substr(
-          error.message.indexOf("{"),
-          error.message.lastIndexOf("}")
-        )
-      );
-      const oError = oErrorJSON.originalError.message;
-      toastr.error(oError);
+      toastr.error(error.message);
     }
     $("#setApprovalBtn").prop("disabled", false);
   }
@@ -721,7 +823,7 @@ async function safeTransferFrom() {
       !amount ||
       isNaN(amount) ||
       amount <= 0 ||
-      !Number.isInteger(number(amount))
+      !Number.isInteger(Number(amount))
     ) {
       toastr.warning("A valid amount is required");
       return;
@@ -733,22 +835,13 @@ async function safeTransferFrom() {
       await checkNetwork(chainId);
     }
     $("#safeTransferFromBtn").prop("disabled", true);
+    try {
+      estimateGas = await oContract.methods
+        .safeTransferFrom(addressFrom, addressTo, tokenId, amount, "0x0000")
+        .estimateGas({ from: aAccount });
 
-    const estimateGas = await oContract.methods
-      .safeTransferFrom(addressFrom, addressTo, tokenId, amount, "0x0000")
-      .estimateGas({ from: aAccount });
-
-    console.log(estimateGas);
-
-    await oContract.methods
-      .safeTransferFrom(addressFrom, addressTo, tokenId, amount, "0x0000")
-      .send({ from: aAccount, gas: estimateGas });
-
-    $("#safeTransferFromBtn").prop("disabled", false);
-  } catch (error) {
-    if (error.message.includes("User denied")) {
-      toastr.warning("You rejected the transaction on Metamask!");
-    } else {
+      console.log(estimateGas);
+    } catch (error) {
       let oErrorJSON = JSON.parse(
         error.message.substr(
           error.message.indexOf("{"),
@@ -756,7 +849,25 @@ async function safeTransferFrom() {
         )
       );
       const oError = oErrorJSON.originalError.message;
-      toastr.error(oError);
+      if (error.message.includes("ERC1155")) {
+        toastr.error(oError);
+      } else {
+        toastr.error(error.message);
+      }
+      $("#safeTransferFromBtn").prop("disabled", false);
+      return;
+    }
+    await oContract.methods
+      .safeTransferFrom(addressFrom, addressTo, tokenId, amount, "0x0000")
+      .send({ from: aAccount, gas: estimateGas });
+    $("#token-container").empty();
+    await showToken();
+    $("#safeTransferFromBtn").prop("disabled", false);
+  } catch (error) {
+    if (error.message.includes("User denied")) {
+      toastr.warning("You rejected the transaction on Metamask!");
+    } else {
+      toastr.error(error.message);
     }
     $("#safeTransferFromBtn").prop("disabled", false);
   }
@@ -766,9 +877,12 @@ async function mintBatch() {
   try {
     const ids = $("#mintIds").val();
     const amounts = $("#mintAmounts").val();
+    const uris = $("#mintUris").val();
 
     const aIds = ids.split(",").map(Number);
     const aAmounts = amounts.split(",").map(Number);
+    const aUris = uris.split(",");
+
     toastr.clear();
     for (let i = 0; i < aIds.length; i++) {
       if (
@@ -793,7 +907,17 @@ async function mintBatch() {
         return;
       }
     }
+    for (let i = 0; i < aUris.length; i++) {
+      if (!validateURI(aUris[i])) {
+        toastr.warning("A valid uri is required");
+        return;
+      }
+    }
     if (aIds.length !== aAmounts.length) {
+      toastr.warning("Length Mismatch");
+      return;
+    }
+    if (aIds.length !== aUris.length) {
       toastr.warning("Length Mismatch");
       return;
     }
@@ -803,31 +927,53 @@ async function mintBatch() {
       chainId = await web3.eth.getChainId();
       await checkNetwork(chainId);
     }
+    for (let i = 0; i < aUris.length; i++) {
+      const _isUriExists = await oContract.methods
+        ._isUriExists(aUris[i])
+        .call();
+      if (_isUriExists) {
+        toastr.warning("URI already exists use mintBatch with out uri");
+        return;
+      }
+    }
+
     $("#mintBatchBtn").prop("disabled", true);
 
-    const estimateGas = await oContract.methods
-      .mintBatch(aIds, aAmounts)
-      .estimateGas({ from: aAccount });
+    try {
+      estimateGas = await oContract.methods
+        .mintBatch(aIds, aAmounts, aUris)
+        .estimateGas({ from: aAccount });
 
-    console.log(estimateGas);
-
-    await oContract.methods
-      .mintBatch(aIds, aAmounts)
-      .send({ from: aAccount, gas: estimateGas });
-
-    $("#mintBatchBtn").prop("disabled", false);
-  } catch (error) {
-    if (error.message.includes("User denied")) {
-      toastr.warning("You rejected the transaction on Metamask!");
-    } else {
+      console.log(estimateGas);
+    } catch (error) {
       let oErrorJSON = JSON.parse(
         error.message.substr(
           error.message.indexOf("{"),
           error.message.lastIndexOf("}")
         )
       );
-      const oError = oErrorJSON.originalError.message;
-      toastr.error(oError);
+
+      if (error.message.includes("ERC1155")) {
+        let oError = oErrorJSON.originalError.message;
+        toastr.error(oError);
+      } else {
+        toastr.error(error.message);
+      }
+      $("#mintBatchBtn").prop("disabled", false);
+      return;
+    }
+
+    await oContract.methods
+      .mintBatch(aIds, aAmounts, aUris)
+      .send({ from: aAccount, gas: estimateGas });
+    $("#token-container").empty();
+    await showToken();
+    $("#mintBatchBtn").prop("disabled", false);
+  } catch (error) {
+    if (error.message.includes("User denied")) {
+      toastr.warning("You rejected the transaction on Metamask!");
+    } else {
+      toastr.error(error.message);
     }
     $("#mintBatchBtn").prop("disabled", false);
   }
@@ -876,21 +1022,13 @@ async function burnBatch() {
 
     $("#burnBatchBtn").prop("disabled", true);
 
-    const estimateGas = await oContract.methods
-      .burnBatch(aIds, aAmounts)
-      .estimateGas({ from: aAccount });
+    try {
+      estimateGas = await oContract.methods
+        .burnBatch(aIds, aAmounts)
+        .estimateGas({ from: aAccount });
 
-    console.log(estimateGas);
-
-    await oContract.methods
-      .burnBatch(aIds, aAmounts)
-      .send({ from: aAccount, gas: estimateGas });
-
-    $("#burnBatchBtn").prop("disabled", false);
-  } catch (error) {
-    if (error.message.includes("User denied")) {
-      toastr.warning("You rejected the transaction on Metamask!");
-    } else {
+      console.log(estimateGas);
+    } catch (error) {
       let oErrorJSON = JSON.parse(
         error.message.substr(
           error.message.indexOf("{"),
@@ -898,7 +1036,25 @@ async function burnBatch() {
         )
       );
       const oError = oErrorJSON.originalError.message;
-      toastr.error(oError);
+      if (error.message.includes("ERC1155")) {
+        toastr.error(oError);
+      } else {
+        toastr.error(error.message);
+      }
+      $("#burnBatchBtn").prop("disabled", false);
+      return;
+    }
+    await oContract.methods
+      .burnBatch(aIds, aAmounts)
+      .send({ from: aAccount, gas: estimateGas });
+    $("#token-container").empty();
+    await showToken();
+    $("#burnBatchBtn").prop("disabled", false);
+  } catch (error) {
+    if (error.message.includes("User denied")) {
+      toastr.warning("You rejected the transaction on Metamask!");
+    } else {
+      toastr.error(error.message);
     }
     $("#burnBatchBtn").prop("disabled", false);
   }
@@ -962,21 +1118,13 @@ async function safeBatchTransferFrom() {
 
     $("#safeBatchTransferFromBtn").prop("disabled", true);
 
-    const estimateGas = await oContract.methods
-      .safeBatchTransferFrom(addressFrom, addressTo, aIds, aAmounts, "0x0000")
-      .estimateGas({ from: aAccount });
+    try {
+      estimateGas = await oContract.methods
+        .safeBatchTransferFrom(addressFrom, addressTo, aIds, aAmounts, "0x0000")
+        .estimateGas({ from: aAccount });
 
-    console.log(estimateGas);
-
-    await oContract.methods
-      .safeBatchTransferFrom(addressFrom, addressTo, aIds, aAmounts, "0x0000")
-      .send({ from: aAccount, gas: estimateGas });
-
-    $("#safeBatchTransferFromBtn").prop("disabled", false);
-  } catch (error) {
-    if (error.message.includes("User denied")) {
-      toastr.warning("You rejected the transaction on Metamask!");
-    } else {
+      console.log(estimateGas);
+    } catch (error) {
       let oErrorJSON = JSON.parse(
         error.message.substr(
           error.message.indexOf("{"),
@@ -984,7 +1132,25 @@ async function safeBatchTransferFrom() {
         )
       );
       const oError = oErrorJSON.originalError.message;
-      toastr.error(oError);
+      if (error.message.includes("ERC1155")) {
+        toastr.error(oError);
+      } else {
+        toastr.error(error.message);
+      }
+      $("#safeBatchTransferFromBtn").prop("disabled", false);
+      return;
+    }
+    await oContract.methods
+      .safeBatchTransferFrom(addressFrom, addressTo, aIds, aAmounts, "0x0000")
+      .send({ from: aAccount, gas: estimateGas });
+    $("#token-container").empty();
+    await showToken();
+    $("#safeBatchTransferFromBtn").prop("disabled", false);
+  } catch (error) {
+    if (error.message.includes("User denied")) {
+      toastr.warning("You rejected the transaction on Metamask!");
+    } else {
+      toastr.error(error.message);
     }
     $("#safeBatchTransferFromBtn").prop("disabled", false);
   }
@@ -1001,5 +1167,228 @@ async function checkNetwork(chainId) {
     toastr.success("network switched successfully");
     chainId = await web3.eth.getChainId();
     $("#network").text("ChainId: " + chainId);
+  }
+}
+
+function validateURI(uri) {
+  try {
+    new URL(uri);
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+async function showToken() {
+  const tokens = await oContract.methods.ownerOfIds(aAccount).call();
+  if (tokens.length === 0) {
+    return;
+  } else
+    try {
+      {
+        let response;
+        for (let id = 0; id < tokens.length; id++) {
+          const tokenId = tokens[id];
+          const balanceOf = await oContract.methods
+            .balanceOf(aAccount, tokens[id])
+            .call();
+          const uri = await oContract.methods.uri(tokenId).call();
+          try {
+            response = await fetch(uri);
+          } catch (error) {
+            toastr.error(error.message);
+            return;
+          }
+          const jsonData = await response.json();
+
+          $("#token-container").append(`
+          <div id=${id} class="card" style="width: 18rem;">
+            <img src="${jsonData.image}" class="card-img-top" alt="NFT IMAGE">
+            <div class="card-body">
+              <h5 class="card-title">ID: ${tokenId}</h5>
+              <h5 class="card-title">Name: ${jsonData.name}</h5>
+              <h5 class="card-title">Quantity: ${balanceOf}</h5>
+              <h5 class="card-title">Description: ${jsonData.description}</h5>
+            </div>
+          </div>
+        `);
+        }
+      }
+    } catch (error) {
+      toastr.error(error.message);
+    }
+}
+async function WithOutUri() {
+  try {
+    const tokenId = $("#WithOutUriId").val();
+    const mintQuantity = $("#WithOutUriAmount").val();
+
+    toastr.clear();
+    if (
+      !tokenId ||
+      isNaN(tokenId) ||
+      tokenId <= 0 ||
+      !Number.isInteger(Number(tokenId))
+    ) {
+      toastr.warning("A valid tokenId is required");
+      return;
+    }
+
+    if (
+      !mintQuantity ||
+      isNaN(mintQuantity) ||
+      mintQuantity <= 0 ||
+      !Number.isInteger(Number(mintQuantity))
+    ) {
+      toastr.warning("A valid amount is required");
+      return;
+    }
+
+    if (!aAccount) {
+      await connectMetamask();
+    } else {
+      chainId = await web3.eth.getChainId();
+      await checkNetwork(chainId);
+    }
+    const uri = await oContract.methods.uri(tokenId).call();
+    const _isUriExists = await oContract.methods._isUriExists(uri).call();
+    if (!_isUriExists) {
+      toastr.warning("URI not exists use mint with uri");
+      return;
+    }
+    $("#WithOutUriBtn").prop("disabled", true);
+
+    try {
+      estimateGas = await oContract.methods
+        .mint(tokenId, mintQuantity, "")
+        .estimateGas({ from: aAccount });
+      console.log(estimateGas);
+    } catch (error) {
+      let oErrorJSON = JSON.parse(
+        error.message.substr(
+          error.message.indexOf("{"),
+          error.message.lastIndexOf("}")
+        )
+      );
+      const oError = oErrorJSON.originalError.message;
+      if (error.message.includes("ERC1155")) {
+        toastr.error(oError);
+   
+      } else {
+        toastr.error(error.message);
+
+        $("#WithOutUriBtn").prop("disabled", false);
+        return;
+      }
+    }
+    await oContract.methods
+      .mint(tokenId, mintQuantity, "")
+      .send({ from: aAccount, gas: estimateGas });
+    $("#token-container").empty();
+    await showToken();
+    $("#WithOutUriBtn").prop("disabled", false);
+  } catch (error) {
+    if (error.message.includes("User denied")) {
+      toastr.warning("You rejected the transaction on Metamask!");
+    } else {
+      toastr.error(error.message);
+    }
+    $("#WithOutUriBtn").prop("disabled", false);
+  }
+}
+async function WithOutUriBatch() {
+  try {
+    const ids = $("#withOutUriIdsBatch").val();
+    const amounts = $("#withOutUriAmountsBatch").val();
+
+    const aIds = ids.split(",").map(Number);
+    const aAmounts = amounts.split(",").map(Number);
+    toastr.clear();
+    for (let i = 0; i < aIds.length; i++) {
+      if (
+        !aIds[i] ||
+        isNaN(aIds[i]) ||
+        aIds[i] <= 0 ||
+        !Number.isInteger(Number(aIds[i]))
+      ) {
+        toastr.warning("valid token Ids required");
+        return;
+      }
+    }
+
+    for (let i = 0; i < aAmounts.length; i++) {
+      if (
+        !aAmounts[i] ||
+        isNaN(aAmounts[i]) ||
+        aAmounts[i] <= 0 ||
+        !Number.isInteger(Number(aAmounts[i]))
+      ) {
+        toastr.warning("valid amounts required");
+        return;
+      }
+    }
+
+    if (aIds.length !== aAmounts.length) {
+      toastr.warning("Length Mismatch");
+      return;
+    }
+
+    if (!aAccount) {
+      await connectMetamask();
+    } else {
+      chainId = await web3.eth.getChainId();
+      await checkNetwork(chainId);
+    }
+    for (let i = 0; i < aIds.length; i++) {
+      const uri = await oContract.methods.uri(aIds[i]).call();
+
+      const _isUriExists = await oContract.methods._isUriExists(uri).call();
+
+      if (!_isUriExists) {
+        toastr.warning("URI not exists use mintBatch with uri");
+        return;
+      }
+    }
+
+    $("#mintBatchBwithOutUriBatchBtntn").prop("disabled", true);
+
+    try {
+      estimateGas = await oContract.methods
+        .mintBatch(aIds, aAmounts, [])
+        .estimateGas({ from: aAccount });
+
+      console.log(estimateGas);
+    } catch (error) {
+      let oErrorJSON = JSON.parse(
+        error.message.substr(
+          error.message.indexOf("{"),
+          error.message.lastIndexOf("}")
+        )
+      );
+      const oError = oErrorJSON.originalError.message;
+      if (error.message.includes("ERC1155")) {
+        toastr.error(oError);
+       
+      } else {
+        toastr.error(error.message);
+      }
+
+      $("#withOutUriBatchBtn").prop("disabled", false);
+      return;
+    }
+
+    await oContract.methods
+      .mintBatch(aIds, aAmounts, [])
+      .send({ from: aAccount, gas: estimateGas });
+    $("#token-container").empty();
+    await showToken();
+    $("#withOutUriBatchBtn").prop("disabled", false);
+  } catch (error) {
+    if (error.message.includes("User denied")) {
+      toastr.warning("You rejected the transaction on Metamask!");
+    } else {
+      toastr.error(error.message);
+    }
+    $("#withOutUriBatchBtn").prop("disabled", false);
   }
 }
